@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pencatatan Proyek</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f0f0eb;--surface:#fff;--surface-2:#fafaf7;--border:#e4e4da;--border-md:#ccccc0;
+  --text:#181816;--muted:#64645c;--faint:#a0a098;
+  --accent:#2563eb;--accent-lt:#eff6ff;--accent-md:#bfdbfe;--accent-dk:#1d4ed8;
+  --green:#16a34a;--green-lt:#f0fdf4;--green-md:#bbf7d0;--green-dk:#15803d;
+  --red:#dc2626;--red-lt:#fef2f2;--red-md:#fecaca;--red-dk:#b91c1c;
+  --amber:#d97706;--amber-lt:#fffbeb;--amber-md:#fed7aa;--amber-dk:#b45309;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;--purple-md:#ddd6fe;
+  --teal:#0d9488;--teal-lt:#f0fdfa;--teal-md:#99f6e4;
+  --r:8px;--r-lg:14px;--sh:0 1px 4px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;height:56px;position:sticky;top:0;z-index:50;gap:16px}
+.hdr-brand{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;letter-spacing:-.3px;color:var(--text)}
+.hdr-brand .ic{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.hdr-sub{font-size:12px;color:var(--faint);margin-left:auto}
+.wrap{max-width:1160px;margin:0 auto;padding:28px 24px}
+.page{display:none}.page.active{display:block}
+h1{font-size:22px;font-weight:800;letter-spacing:-.4px}
+h2{font-size:17px;font-weight:700}
+h3{font-size:14px;font-weight:700}
+.lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.muted{color:var(--muted);font-size:13px}.faint{color:var(--faint);font-size:12px}
+.mono{font-family:'SF Mono',Menlo,monospace;font-size:11px;color:var(--faint)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh)}
+.card-pad{padding:18px 20px}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.mc.c-dark::before{background:var(--text)}.mc.c-blue::before{background:var(--accent)}.mc.c-green::before{background:var(--green)}.mc.c-red::before{background:var(--red)}.mc.c-amber::before{background:var(--amber)}.mc.c-teal::before{background:var(--teal)}
+.mc .lbl{margin-bottom:8px}.mc .val{font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1}.mc .sub{font-size:11px;color:var(--faint);margin-top:5px}
+.val-dark{color:var(--text)}.val-blue{color:var(--accent)}.val-green{color:var(--green-dk)}.val-red{color:var(--red-dk)}.val-amber{color:var(--amber-dk)}.val-teal{color:var(--teal)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%}
+.b-aktif{background:var(--green-lt);color:var(--green-dk);border:1px solid var(--green-md)}.b-aktif::before{background:var(--green)}
+.b-selesai{background:var(--accent-lt);color:var(--accent-dk);border:1px solid var(--accent-md)}.b-selesai::before{background:var(--accent)}
+.b-batal{background:var(--red-lt);color:var(--red-dk);border:1px solid var(--red-md)}.b-batal::before{background:var(--red)}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700}
+.t-dp{background:var(--accent-lt);color:var(--accent-dk)}.t-gaji{background:var(--amber-lt);color:var(--amber-dk)}
+.t-bon{background:var(--purple-lt);color:var(--purple)}.t-lain{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+/* Termin badges */
+.tb-belum{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1}
+.tb-tagih{background:var(--amber-lt);color:var(--amber-dk);border:1px solid var(--amber-md)}
+.tb-bayar{background:var(--green-lt);color:var(--green-dk);border:1px solid var(--green-md)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);border-bottom:1px solid var(--border);text-align:left;background:var(--surface-2)}
+td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafaf6}
+.tr{text-align:right}
+/* Proyek cards */
+.proj-grid{display:grid;gap:14px}
+.proj-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);padding:20px 22px;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative;overflow:hidden}
+.proj-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);border-color:var(--border-md)}
+.proj-card .accent-bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.proj-card .accent-bar.aktif{background:var(--green)}.proj-card .accent-bar.selesai{background:var(--accent)}.proj-card .accent-bar.batal{background:var(--red)}
+.proj-row{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.proj-meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.proj-name{font-size:16px;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
+.proj-client{font-size:13px;color:var(--muted)}
+.proj-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.proj-stat .s-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);margin-bottom:3px}
+.proj-stat .s-val{font-size:14px;font-weight:800}
+.proj-stat .s-val.blue{color:var(--accent)}.proj-stat .s-val.green{color:var(--green-dk)}.proj-stat .s-val.red{color:var(--red-dk)}.proj-stat .s-val.amber{color:var(--amber-dk)}
+.proj-actions{display:flex;gap:6px;align-items:flex-start;flex-shrink:0}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border:1px solid var(--border-md);border-radius:var(--r);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .13s;font-family:inherit;white-space:nowrap}
+.btn:hover{background:var(--bg);border-color:var(--text)}
+.btn-p{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-p:hover{background:var(--accent-dk);border-color:var(--accent-dk)}
+.btn-g{background:var(--green);color:#fff;border-color:var(--green)}.btn-g:hover{background:var(--green-dk)}
+.btn-t{background:var(--teal);color:#fff;border-color:var(--teal)}.btn-t:hover{background:#0f766e}
+.btn-sm{padding:5px 11px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--muted)}.btn-ghost:hover{background:var(--bg);color:var(--text);border-color:var(--border)}
+.btn-del{color:var(--red-dk);border-color:var(--red-md);background:var(--surface)}.btn-del:hover{background:var(--red-lt)}
+.btn-warn{color:var(--amber-dk);border-color:var(--amber-md);background:var(--surface)}.btn-warn:hover{background:var(--amber-lt)}
+/* Layout utils */
+.fx{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fxb{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.mb4{margin-bottom:4px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}.mb24{margin-bottom:24px}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+.sep{height:1px;background:var(--border);margin:16px 0}
+.empty{text-align:center;padding:32px;color:var(--faint);font-size:13px}
+/* Tabs */
+.tab-wrap{display:flex;gap:0;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:3px;width:fit-content;margin-bottom:18px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;border-radius:6px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .13s}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+/* Detail header */
+.det-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px 26px;margin-bottom:20px;box-shadow:var(--sh)}
+.det-id-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.det-title{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+/* Progress section */
+.prog-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:20px;box-shadow:var(--sh)}
+.prog-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.prog-item .p-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.prog-item .p-title{font-size:12px;font-weight:700;color:var(--muted)}
+.prog-item .p-pct{font-size:18px;font-weight:800;letter-spacing:-.5px}
+.prog-item .p-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.prog-item .p-fill{height:100%;border-radius:4px;transition:width .5s}
+.prog-item .p-sub{font-size:11px;color:var(--faint);margin-top:5px}
+/* Gaji cards */
+.gaji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:14px}
+.gaji-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--sh)}
+.gaji-card .g-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-lt);border:2px solid var(--accent-md);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--accent-dk);margin-bottom:12px}
+.gaji-card .g-name{font-size:15px;font-weight:800;margin-bottom:2px}
+.gaji-card .g-bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0 4px}
+.gaji-card .g-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.gaji-card .g-nums{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gaji-card .g-num-item .n-lbl{font-size:10px;color:var(--faint);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.gaji-card .g-num-item .n-val{font-size:13px;font-weight:800}
+.gaji-card .g-actions{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+/* Bon cards */
+.bon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:14px}
+.bon-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--sh)}
+.bon-card .b-avatar{width:36px;height:36px;border-radius:50%;background:var(--purple-lt);border:2px solid var(--purple-md);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--purple);margin-bottom:10px}
+.bon-card .b-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+.bon-card .b-num .n-lbl{font-size:10px;color:var(--faint);font-weight:600;text-transform:uppercase;margin-bottom:2px}
+.bon-card .b-num .n-val{font-size:12px;font-weight:800}
+.bon-card .b-actions{display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--border)}
+/* Termin */
+.termin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:0;box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.termin-hdr{display:grid;grid-template-columns:1fr auto auto auto auto auto;align-items:center;gap:12px;padding:14px 18px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+.termin-body{padding:14px 18px}
+.termin-prog{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.termin-prog-fill{height:100%;border-radius:3px;transition:width .4s}
+/* Catatan */
+.catatan-section{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.contact-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;gap:10px}
+.contact-icon{width:32px;height:32px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+/* Ringkasan */
+.rin-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px;margin-bottom:14px;box-shadow:var(--sh)}
+.rin-profit-val{font-size:32px;font-weight:900;letter-spacing:-.8px}
+.rin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.rin-list-item{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;gap:8px}
+.rin-list-item:last-child{border-bottom:none}
+.rin-total{display:flex;justify-content:space-between;padding-top:10px;font-weight:800;font-size:14px;border-top:1px solid var(--border-md);margin-top:4px}
+/* Form */
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--border-md);border-radius:var(--r);background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .13s,box-shadow .13s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input[readonly]{background:var(--bg);color:var(--muted);cursor:default}
+textarea{resize:vertical;min-height:80px}
+/* Modal */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.moverlay.open{display:flex}
+.mbox{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);width:min(580px,100%);max-height:92vh;overflow-y:auto;box-shadow:0 24px 56px rgba(0,0,0,.2)}
+.mbox-wide{width:min(700px,100%)}
+.mhdr{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+.mhdr h3{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.mbdy{padding:22px}
+.mftr{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+/* Slip gaji print */
+@media print{
+  .no-print{display:none!important}
+  .slip-body{padding:0;margin:0}
+  body{background:#fff}
+}
+.slip-wrap{background:#fff;border:2px solid var(--border-md);border-radius:var(--r-lg);padding:28px;font-size:13px;max-width:520px;margin:0 auto}
+.slip-logo{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--text)}
+.slip-logo .ic{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+.slip-title{font-size:18px;font-weight:900;letter-spacing:-.3px}
+.slip-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.slip-row:last-child{border-bottom:none}
+.slip-total{display:flex;justify-content:space-between;padding:12px 14px;background:var(--green-lt);border:1px solid var(--green-md);border-radius:var(--r);margin-top:12px;font-weight:800;font-size:15px}
+/* Chart */
+.chart-wrap{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--sh);margin-bottom:14px}
+.chart-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;cursor:pointer;border:none;background:none;font-family:inherit;padding:0;margin-bottom:18px;font-weight:600;transition:color .13s}
+.back:hover{color:var(--text)}
+.anggota-list-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px}
+.av-sm{width:28px;height:28px;border-radius:50%;background:var(--accent-lt);border:1px solid var(--accent-md);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--accent-dk)}
+.av-purple{background:var(--purple-lt);border-color:var(--purple-md);color:var(--purple)}
+@media(max-width:700px){.fg2,.fg3{grid-template-columns:1fr}.wrap{padding:16px}.mg{grid-template-columns:1fr 1fr}.prog-row{grid-template-columns:1fr}.rin-grid{grid-template-columns:1fr}.gaji-grid,.bon-grid{grid-template-columns:1fr}.catatan-section{grid-template-columns:1fr}.termin-hdr{grid-template-columns:1fr 1fr}}
+
+/* ══ MOBILE FIRST ══ */
+:root{--fs-base:14px}
+@media(max-width:480px){
+  :root{--fs-base:13px}
+  .hdr{padding:0 14px;height:50px}
+  .hdr-brand{font-size:14px}
+  .hdr-brand .ic{width:28px;height:28px;font-size:14px}
+  .hdr-sub{display:none}
+  .wrap{padding:14px 12px}
+  h1{font-size:18px}
+  .det-title{font-size:18px}
+  .mg{grid-template-columns:1fr 1fr}
+  .mc .val{font-size:16px}
+  .proj-stats{grid-template-columns:1fr 1fr}
+  .proj-name{font-size:14px}
+  .tab-btn{padding:5px 9px;font-size:11px}
+  .btn{padding:6px 10px;font-size:12px}
+  .btn-sm{padding:4px 8px;font-size:11px}
+  .gaji-grid,.bon-grid{grid-template-columns:1fr}
+  .catatan-section{grid-template-columns:1fr}
+  .prog-row{grid-template-columns:1fr}
+  .rin-grid{grid-template-columns:1fr}
+  .termin-hdr{grid-template-columns:1fr 1fr;gap:8px}
+  .fg2,.fg3{grid-template-columns:1fr}
+  .mbox{width:100%;border-radius:var(--r-lg) var(--r-lg) 0 0;position:fixed;bottom:0;left:0;right:0;max-height:85vh}
+  .moverlay{align-items:flex-end;padding:0}
+  .proj-actions{flex-direction:column;gap:4px}
+  table{font-size:11px}
+  th,td{padding:8px 10px}
+  .det-hero{padding:16px}
+  .card-pad{padding:14px}
+}
+@media(min-width:481px) and (max-width:700px){
+  .mg{grid-template-columns:1fr 1fr}
+  .proj-stats{grid-template-columns:1fr 1fr}
+  .gaji-grid,.bon-grid{grid-template-columns:1fr}
+  .catatan-section,.rin-grid,.prog-row{grid-template-columns:1fr}
+  .fg2,.fg3{grid-template-columns:1fr}
+  .mbox{width:min(520px,96vw)}
+}
+/* Pajak badge */
+.pajak-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--amber-lt);color:var(--amber-dk);border:1px solid var(--amber-md)}
+/* FAB mobile */
+.fab{display:none;position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(37,99,235,.4);z-index:40;align-items:center;justify-content:center;transition:transform .15s}
+.fab:hover{transform:scale(1.08)}
+@media(max-width:480px){.fab{display:flex}}
+/* Sticky tab wrap mobile */
+@media(max-width:480px){
+  .tab-wrap{overflow-x:auto;white-space:nowrap;width:100%;display:flex;border-radius:var(--r);scrollbar-width:none}
+  .tab-wrap::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0}
+  .fxb.mt20.mb16{flex-direction:column;align-items:stretch}
+  #tabActions{display:flex;flex-wrap:wrap;gap:6px}
+}
+
+/* ══ SECURITY ══ */
+.session-bar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--faint);padding:4px 10px;background:var(--green-lt);border:1px solid var(--green-md);border-radius:20px}
+.session-bar .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.lock-icon{font-size:11px}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-brand"><div class="ic">📋</div>Pencatatan Proyek</div>
+  <span class="hdr-sub" id="hdrInstansi" style="cursor:pointer" onclick="openEditInstansi()" title="Klik untuk ubah nama">—</span>
+  <div class="session-bar" id="sessionBar" style="display:none"><span class="dot"></span><span id="sessionUser">Sesi aktif</span></div>
+  <button onclick="openChangePass()" style="border:none;background:none;cursor:pointer;font-size:18px;padding:4px;border-radius:6px;color:var(--muted)" title="Ganti Password" id="lockBtn" style="display:none">🔐</button>
+  <button onclick="doLogout()" style="padding:5px 12px;border:1px solid var(--border-md);border-radius:6px;background:var(--surface);cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;color:var(--muted);display:none" id="logoutBtn">Keluar</button>
+</header>
+
+<div class="wrap">
+<!-- DASHBOARD -->
+<div id="pgDash" class="page active">
+  <div class="fxb mb24">
+    <div><h1 class="mb4">Portofolio Proyek</h1><p class="muted" id="dashSub">Memuat...</p></div>
+    <div class="fx">
+      <button class="btn" onclick="openKelolaAnggota()">👥 Kelola Tim</button>
+      <button class="btn" onclick="openKelolaTemplate()">📋 Template</button>
+      <button class="btn btn-p" onclick="openAddProyek()">＋ Tambah Proyek</button>
+    </div>
+  </div>
+  <div class="mg" id="dashMetrics"></div>
+  <div class="proj-grid" id="proyekGrid"></div>
+</div>
+
+<!-- DETAIL -->
+<div id="pgDetail" class="page">
+  <button class="back" onclick="goBack()">← Kembali ke Dashboard</button>
+  <div class="det-hero" id="detHdr"></div>
+  <div class="mg" id="detMetrics"></div>
+  <div class="prog-section" id="detProg"></div>
+
+  <div class="fxb mt20 mb16">
+    <div class="tab-wrap">
+      <button class="tab-btn active" onclick="switchTab('transaksi',this)">📄 Transaksi</button>
+      <button class="tab-btn" onclick="switchTab('termin',this)">🎯 Termin</button>
+      <button class="tab-btn" onclick="switchTab('gaji',this)">💰 Gaji Tim</button>
+      <button class="tab-btn" onclick="switchTab('bon',this)">🪙 Kas Bon</button>
+      <button class="tab-btn" onclick="switchTab('grafik',this)">📊 Grafik</button>
+      <button class="tab-btn" onclick="switchTab('catatan',this)">📌 Catatan</button>
+      <button class="tab-btn" onclick="switchTab('ringkasan',this)">📋 Ringkasan</button>
+    </div>
+    <div class="fx" id="tabActions"></div>
+  </div>
+
+  <div id="tabTransaksi">
+    <div class="card"><div class="tw">
+      <table><thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan</th><th class="tr">Pemasukan</th><th class="tr">Pengeluaran</th><th></th></tr></thead>
+      <tbody id="trxBody"></tbody></table>
+    </div></div>
+  </div>
+
+  <div id="tabTermin" style="display:none">
+    <div id="terminContent"></div>
+  </div>
+
+  <div id="tabGaji" style="display:none">
+    <div class="gaji-grid" id="gajiGrid"></div>
+    <p class="faint mt8">* Nominal Rp0 = belum diset. Klik ⚙ Set Gaji untuk mengatur target gaji.</p>
+  </div>
+
+  <div id="tabBon" style="display:none">
+    <div class="bon-grid" id="bonGrid"></div>
+  </div>
+
+  <div id="tabGrafik" style="display:none">
+    <div id="grafikContent"></div>
+  </div>
+
+  <div id="tabCatatan" style="display:none">
+    <div id="catatanContent"></div>
+  </div>
+
+  <div id="tabRingkasan" style="display:none">
+    <div id="ringkasanContent"></div>
+  </div>
+</div>
+</div>
+
+
+<!-- LOGIN SCREEN -->
+<div id="pgLogin" style="display:flex;align-items:center;justify-content:center;min-height:100vh;position:fixed;inset:0;background:var(--bg);z-index:999">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.12);padding:40px 36px;width:min(380px,90vw);text-align:center">
+    <div style="width:56px;height:56px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 20px">📋</div>
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px">Pencatatan Proyek</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:28px" id="loginInstansi">—</div>
+    <div id="loginError" style="display:none;background:var(--red-lt);border:1px solid var(--red-md);color:var(--red-dk);border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:14px;font-weight:600"></div>
+    <div style="margin-bottom:14px;text-align:left">
+      <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Password</label>
+      <div style="position:relative">
+        <input type="password" id="loginPass" placeholder="Masukkan password..." style="width:100%;padding:10px 42px 10px 12px;border:1.5px solid var(--border-md);border-radius:8px;font-size:14px;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')doLogin()">
+        <button onclick="togglePassVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;color:var(--muted);font-size:16px" id="passEye">👁</button>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;text-align:left">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="rememberMe" checked style="width:16px;height:16px;accent-color:var(--accent)"> Ingat saya di perangkat ini (7 hari)
+      </label>
+    </div>
+    <button onclick="doLogin()" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s" onmouseover="this.style.background='var(--accent-dk)'" onmouseout="this.style.background='var(--accent)'">Masuk →</button>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--faint)">🔐 Data dienkripsi dengan AES-256 · Pertama kali? Password default: <strong>admin123</strong></div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div id="changePassModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);width:min(400px,95vw);box-shadow:0 20px 48px rgba(0,0,0,.2)">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:16px;font-weight:800">🔐 Ganti Password</span>
+      <button onclick="document.getElementById('changePassModal').style.display='none'" style="border:none;background:none;cursor:pointer;font-size:18px;color:var(--muted)">✕</button>
+    </div>
+    <div style="padding:22px">
+      <div id="changePassError" style="display:none;background:var(--red-lt);border:1px solid var(--red-md);color:var(--red-dk);border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:14px"></div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Password Lama</label>
+        <input type="password" id="cpOld" style="width:100%;padding:9px 11px;border:1px solid var(--border-md);border-radius:8px;font-size:13px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Password Baru</label>
+        <input type="password" id="cpNew" style="width:100%;padding:9px 11px;border:1px solid var(--border-md);border-radius:8px;font-size:13px" placeholder="Min 6 karakter">
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Konfirmasi Password Baru</label>
+        <input type="password" id="cpConfirm" style="width:100%;padding:9px 11px;border:1px solid var(--border-md);border-radius:8px;font-size:13px">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="document.getElementById('changePassModal').style.display='none'" style="padding:8px 16px;border:1px solid var(--border-md);border-radius:8px;background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px">Batal</button>
+        <button onclick="doChangePass()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700">Simpan Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIP GAJI PRINT -->
+<div id="slipPrint" style="display:none;padding:20px" class="no-print" id="slipPrint"></div>
+
+<!-- MODAL -->
+<div class="moverlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="mbox" id="mboxEl">
+    <div class="mhdr"><h3 id="mTitle">Form</h3><button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+    <div class="mbdy" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const KEY='proj_v8';
+const AUTH_KEY='proj_auth_v8';
+const SESSION_KEY='proj_sess_v8';
+
+// ══ AES-256 ENCRYPTION (Web Crypto API) ══
+async function deriveKey(password, salt){
+  const enc=new TextEncoder();
+  const keyMat=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},keyMat,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encryptData(data, password){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(password,salt);
+  const enc=new TextEncoder();
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(JSON.stringify(data)));
+  const buf=new Uint8Array(salt.length+iv.length+ct.byteLength);
+  buf.set(salt,0);buf.set(iv,16);buf.set(new Uint8Array(ct),28);
+  return btoa(String.fromCharCode(...buf));
+}
+async function decryptData(b64, password){
+  const buf=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+  const salt=buf.slice(0,16);const iv=buf.slice(16,28);const ct=buf.slice(28);
+  const key=await deriveKey(password,salt);
+  const dec=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct);
+  return JSON.parse(new TextDecoder().decode(dec));
+}
+
+// ══ PASSWORD HASH (SHA-256) ══
+async function hashPass(pass){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pass+'_proj_salt_adhitya'));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ══ AUTH SYSTEM ══
+let SESSION_PASS=null;
+
+function getAuthData(){try{return JSON.parse(localStorage.getItem(AUTH_KEY))||null}catch(e){return null}}
+function setAuthData(d){localStorage.setItem(AUTH_KEY,JSON.stringify(d))}
+
+async function initAuth(){
+  const auth=getAuthData();
+  if(!auth){
+    // First time — set default password
+    const h=await hashPass('admin123');
+    setAuthData({hash:h,createdAt:new Date().toISOString()});
+  }
+  // Check saved session
+  const sess=getSavedSession();
+  if(sess){SESSION_PASS=sess;await initApp();return;}
+  showLoginScreen();
+}
+
+function getSavedSession(){
+  try{
+    const raw=localStorage.getItem(SESSION_KEY);
+    if(!raw)return null;
+    const {pass,expiry}=JSON.parse(raw);
+    if(Date.now()>expiry){localStorage.removeItem(SESSION_KEY);return null;}
+    return pass;
+  }catch(e){return null;}
+}
+
+function saveSession(pass,remember){
+  if(!remember){localStorage.removeItem(SESSION_KEY);return;}
+  const expiry=Date.now()+(7*24*60*60*1000); // 7 hari
+  localStorage.setItem(SESSION_KEY,JSON.stringify({pass,expiry}));
+}
+
+function showLoginScreen(){
+  document.getElementById('pgLogin').style.display='flex';
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('lockBtn').style.display='none';
+  document.getElementById('sessionBar').style.display='none';
+  setTimeout(()=>document.getElementById('loginPass').focus(),100);
+}
+
+function hideLoginScreen(){
+  document.getElementById('pgLogin').style.display='none';
+  document.getElementById('logoutBtn').style.display='';
+  document.getElementById('lockBtn').style.display='';
+  document.getElementById('sessionBar').style.display='';
+}
+
+async function doLogin(){
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginError');
+  if(!pass){errEl.textContent='Password tidak boleh kosong.';errEl.style.display='block';return;}
+  const auth=getAuthData();
+  const h=await hashPass(pass);
+  if(h!==auth.hash){
+    errEl.textContent='Password salah. Coba lagi.';
+    errEl.style.display='block';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+    return;
+  }
+  errEl.style.display='none';
+  SESSION_PASS=pass;
+  const remember=document.getElementById('rememberMe').checked;
+  saveSession(pass,remember);
+  await initApp();
+}
+
+function doLogout(){
+  if(!confirm('Yakin ingin keluar?'))return;
+  SESSION_PASS=null;
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('loginPass').value='';
+  showLoginScreen();
+}
+
+function togglePassVis(){
+  const inp=document.getElementById('loginPass');
+  const eye=document.getElementById('passEye');
+  if(inp.type==='password'){inp.type='text';eye.textContent='🙈';}
+  else{inp.type='password';eye.textContent='👁';}
+}
+
+function openChangePass(){
+  document.getElementById('changePassModal').style.display='flex';
+  document.getElementById('cpOld').value='';
+  document.getElementById('cpNew').value='';
+  document.getElementById('cpConfirm').value='';
+  document.getElementById('changePassError').style.display='none';
+  setTimeout(()=>document.getElementById('cpOld').focus(),100);
+}
+
+async function doChangePass(){
+  const old=document.getElementById('cpOld').value;
+  const nw=document.getElementById('cpNew').value;
+  const conf=document.getElementById('cpConfirm').value;
+  const errEl=document.getElementById('changePassError');
+  errEl.style.display='none';
+  if(!old||!nw||!conf){errEl.textContent='Semua field wajib diisi.';errEl.style.display='block';return;}
+  if(nw.length<6){errEl.textContent='Password baru minimal 6 karakter.';errEl.style.display='block';return;}
+  if(nw!==conf){errEl.textContent='Konfirmasi password tidak cocok.';errEl.style.display='block';return;}
+  const auth=getAuthData();
+  const hOld=await hashPass(old);
+  if(hOld!==auth.hash){errEl.textContent='Password lama salah.';errEl.style.display='block';return;}
+  // Re-encrypt data with new password
+  const hNew=await hashPass(nw);
+  const raw=localStorage.getItem(KEY);
+  if(raw){
+    try{
+      const decrypted=await decryptData(raw,SESSION_PASS);
+      const reEncrypted=await encryptData(decrypted,nw);
+      localStorage.setItem(KEY,reEncrypted);
+    }catch(e){console.warn('Re-encrypt skip:',e);}
+  }
+  setAuthData({hash:hNew,changedAt:new Date().toISOString()});
+  SESSION_PASS=nw;
+  saveSession(nw,true);
+  document.getElementById('changePassModal').style.display='none';
+  alert('✅ Password berhasil diubah! Data telah dienkripsi ulang.');
+}
+
+// ══ ENCRYPTED LOAD/SAVE ══
+async function load(){
+  const raw=localStorage.getItem(KEY);
+  if(!raw)return seed();
+  try{
+    // Try decrypt with session password
+    const d=await decryptData(raw,SESSION_PASS);
+    return d;
+  }catch(e){
+    // Fallback: try plain JSON (migration from old version)
+    try{const d=JSON.parse(raw);return d;}catch(e2){return seed();}
+  }
+}
+async function save(d){
+  if(!SESSION_PASS){localStorage.setItem(KEY,JSON.stringify(d));return;}
+  try{
+    const enc=await encryptData(d,SESSION_PASS);
+    localStorage.setItem(KEY,enc);
+  }catch(e){localStorage.setItem(KEY,JSON.stringify(d));}
+}
+
+// Sync-safe save wrapper (queues async save)
+function saveSync(d){save(d).catch(e=>console.error('Save error:',e));}
+
+// ══ INIT APP (after login) ══
+async function initApp(){
+  hideLoginScreen();
+  document.getElementById('sessionUser').textContent='🔐 Sesi aman';
+  D=await load();
+  ensureAppFields();
+  const inst=D.namaInstansi||'Pencatatan Proyek';
+  const hdrEl=document.getElementById('hdrInstansi');
+  if(hdrEl)hdrEl.textContent=inst;
+  const loginEl=document.getElementById('loginInstansi');
+  if(loginEl)loginEl.textContent=inst;
+  renderDash();
+}
+
+function seed(){
+  const d={namaInstansi:'Pencatatan Proyek',anggota:['anwar','adhitya'],proyek:[
+    {id:'Proyek-001',nama:'Jaringan Wifi',klien:'ITB-AD Lamongan',status:'Aktif',nilaiKontrak:121000000,nomorSPK:'602.2/SPK.IT/PAN/IX/2025',tanggalMulai:'2025-09-01',tanggalSelesai:'',catatan:'Pemasangan jaringan wired/wireless Campus 2',
+     kontakPIC:'',nomorRekening:'',namaBank:'',catatanProyek:'',dokumenLink:'',
+     termin:[
+       {id:1,nama:'Termin I',persen:60,nilai:72600000,status:'Sudah Dibayar',tanggalTagih:'2025-09-10',tanggalBayar:'2025-09-15',catatan:'DP 60%'},
+       {id:2,nama:'Termin II (Selesai)',persen:40,nilai:48400000,status:'Belum Ditagih',tanggalTagih:'',tanggalBayar:'',catatan:'Pelunasan setelah pekerjaan selesai'}
+     ],
+     transaksi:[{id:1,tanggal:'2025-09-15',kategori:'DP',keterangan:'Termin I - DP 60%',pemasukan:30000000,pengeluaran:0},{id:2,tanggal:'2025-09-18',kategori:'Lainnya',keterangan:'Pembelian perangkat jaringan',pemasukan:0,pengeluaran:4200000},{id:3,tanggal:'2025-09-20',kategori:'Lainnya',keterangan:'Biaya instalasi teknisi',pemasukan:0,pengeluaran:1300000}],
+     gaji:[{anggota:'anwar',nominalGaji:40000000,riwayat:[{tanggal:'2025-09-20',jumlah:3000000,catatan:'Termin I'}]},{anggota:'adhitya',nominalGaji:20000000,riwayat:[]}],
+     bon:[{anggota:'anwar',riwayatPinjam:[],riwayatKembali:[]},{anggota:'adhitya',riwayatPinjam:[],riwayatKembali:[]}]},
+    {id:'Proyek-002',nama:'SIAKAD',klien:'ITB-AD Lamongan',status:'Aktif',nilaiKontrak:132000000,nomorSPK:'310/MOU/III.3.AU/J/2025',tanggalMulai:'2025-03-01',tanggalSelesai:'',catatan:'Pengembangan sistem informasi akademik',
+     kontakPIC:'Pak Budi (081234567890)',nomorRekening:'1234567890',namaBank:'BRI',catatanProyek:'Deadline pengerjaan September 2025. Login server: admin/s1akad2025',dokumenLink:'',
+     termin:[
+       {id:1,nama:'Termin I',persen:30,nilai:39600000,status:'Sudah Dibayar',tanggalTagih:'2025-03-05',tanggalBayar:'2025-03-10',catatan:'DP 30% kick-off'},
+       {id:2,nama:'Termin II',persen:50,nilai:66000000,status:'Sudah Dibayar',tanggalTagih:'2025-04-10',tanggalBayar:'2025-04-15',catatan:'Progress 50% backend & modul akademik'},
+       {id:3,nama:'Termin III',persen:20,nilai:26400000,status:'Sudah Ditagih',tanggalTagih:'2025-08-01',tanggalBayar:'',catatan:'Pelunasan setelah UAT & serah terima'}
+     ],
+     transaksi:[{id:1,tanggal:'2025-03-10',kategori:'DP',keterangan:'Termin I - DP 30%',pemasukan:39600000,pengeluaran:0},{id:2,tanggal:'2025-04-15',kategori:'DP',keterangan:'Termin II - Progress 50%',pemasukan:39600000,pengeluaran:0},{id:3,tanggal:'2025-03-12',kategori:'Lainnya',keterangan:'Biaya server & hosting',pemasukan:0,pengeluaran:8500000},{id:4,tanggal:'2025-03-15',kategori:'Gaji',keterangan:'Honorarium Termin I - anwar',pemasukan:0,pengeluaran:25000000},{id:5,tanggal:'2025-04-20',kategori:'Gaji',keterangan:'Honorarium Termin II - anwar',pemasukan:0,pengeluaran:30000000},{id:6,tanggal:'2025-04-22',kategori:'Lainnya',keterangan:'Biaya tambahan infrastruktur',pemasukan:0,pengeluaran:11170000}],
+     gaji:[{anggota:'anwar',nominalGaji:60000000,riwayat:[{tanggal:'2025-03-15',jumlah:25000000,catatan:'Termin I'},{tanggal:'2025-04-20',jumlah:30000000,catatan:'Termin II'}]},{anggota:'adhitya',nominalGaji:10000000,riwayat:[]}],
+     bon:[{anggota:'anwar',riwayatPinjam:[],riwayatKembali:[]},{anggota:'adhitya',riwayatPinjam:[],riwayatKembali:[]}]},
+    {id:'Proyek-003',nama:'E-Desa Siser',klien:'Kades Siser',status:'Aktif',nilaiKontrak:21000000,nomorSPK:'',tanggalMulai:'2026-02-01',tanggalSelesai:'',catatan:'Aplikasi E-Desa untuk Desa Siser',
+     kontakPIC:'Pak Lurah (082198765432)',nomorRekening:'',namaBank:'',catatanProyek:'',dokumenLink:'',
+     termin:[
+       {id:1,nama:'DP Awal',persen:7,nilai:1500000,status:'Sudah Dibayar',tanggalTagih:'2026-02-01',tanggalBayar:'2026-02-02',catatan:'DP pembayaran awal'},
+       {id:2,nama:'Termin 1',persen:48,nilai:10000000,status:'Sudah Dibayar',tanggalTagih:'2026-08-05',tanggalBayar:'2026-08-10',catatan:'Progress 50% pengerjaan'},
+       {id:3,nama:'Pelunasan',persen:45,nilai:9500000,status:'Belum Ditagih',tanggalTagih:'',tanggalBayar:'',catatan:'Setelah serah terima aplikasi'}
+     ],
+     transaksi:[{id:1,tanggal:'2026-02-02',kategori:'DP',keterangan:'Dp pembayaran aplikasi',pemasukan:1500000,pengeluaran:0},{id:2,tanggal:'2026-02-02',kategori:'Gaji',keterangan:'Gaji anwar',pemasukan:0,pengeluaran:1500000},{id:3,tanggal:'2026-08-10',kategori:'DP',keterangan:'Termin 1',pemasukan:10000000,pengeluaran:0},{id:4,tanggal:'2026-08-10',kategori:'Gaji',keterangan:'Gaji anwar',pemasukan:0,pengeluaran:8900000},{id:5,tanggal:'2026-08-10',kategori:'Gaji',keterangan:'Gaji adhitya',pemasukan:0,pengeluaran:1100000}],
+     gaji:[{anggota:'anwar',nominalGaji:0,riwayat:[{tanggal:'2026-02-02',jumlah:1500000,catatan:'Gaji awal'},{tanggal:'2026-08-10',jumlah:8900000,catatan:'Termin 1'}]},{anggota:'adhitya',nominalGaji:0,riwayat:[{tanggal:'2026-08-10',jumlah:1100000,catatan:'Termin 1'}]}],
+     bon:[{anggota:'anwar',riwayatPinjam:[],riwayatKembali:[]},{anggota:'adhitya',riwayatPinjam:[],riwayatKembali:[]}]}
+  ]};
+  save(d);return d;
+}
+
+function ensureAppFields(){
+  D.templates=D.templates||[];
+  if(!D.namaInstansi)D.namaInstansi='Pencatatan Proyek';
+  D.proyek.forEach(p=>{
+    if(!p.pajak)p.pajak={aktif:false,pph:2,ppn:11};
+    if(!p.termin)p.termin=[];
+    if(!p.kontakPIC)p.kontakPIC='';
+    if(!p.nomorRekening)p.nomorRekening='';
+    if(!p.namaBank)p.namaBank='';
+    if(!p.catatanProyek)p.catatanProyek='';
+    if(!p.dokumenLink)p.dokumenLink='';
+  });
+}
+
+let D={anggota:[],proyek:[]},curId=null,chartInst=null;
+const fmt=n=>'Rp'+Math.round(n).toLocaleString('id-ID');
+const fmtK=n=>n>=1000000?'Rp'+(n/1000000).toFixed(1).replace('.0','')+'jt':fmt(n);
+const pct=(a,b)=>b===0?0:Math.min(100,Math.round(a/b*100));
+const today=()=>new Date().toISOString().slice(0,10);
+const getP=id=>D.proyek.find(p=>p.id===id);
+const initials=n=>n.slice(0,2).toUpperCase();
+function calcP(p){const masuk=p.transaksi.reduce((s,t)=>s+t.pemasukan,0);const keluar=p.transaksi.reduce((s,t)=>s+t.pengeluaran,0);return{masuk,keluar,profit:masuk-keluar}}
+function calcGaji(g){const bayar=g.riwayat.reduce((s,r)=>s+r.jumlah,0);return{bayar,sisa:g.nominalGaji-bayar}}
+function calcBon(b){const pinjam=b.riwayatPinjam.reduce((s,r)=>s+r.jumlah,0);const kembali=b.riwayatKembali.reduce((s,r)=>s+r.jumlah,0);return{pinjam,kembali,sisa:pinjam-kembali}}
+function lastDate(arr){if(!arr.length)return null;return arr.slice().sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal))[0].tanggal}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function goBack(){showPage('pgDash');renderDash()}
+function ensureFields(p){if(!p.termin)p.termin=[];if(!p.kontakPIC)p.kontakPIC='';if(!p.nomorRekening)p.nomorRekening='';if(!p.namaBank)p.namaBank='';if(!p.catatanProyek)p.catatanProyek='';if(!p.dokumenLink)p.dokumenLink='';if(!p.pajak)p.pajak={aktif:false,pph:2,ppn:11}}
+
+// ══ DASHBOARD ══
+function renderDash(){
+  if(!SESSION_PASS){showLoginScreen();return;}
+  ensureAppFields();
+  const inst=D.namaInstansi||'Pencatatan Proyek';
+  const hdrEl=document.getElementById('hdrInstansi');
+  if(hdrEl)hdrEl.textContent=inst;
+  const loginEl=document.getElementById('loginInstansi');
+  if(loginEl)loginEl.textContent=inst;
+  const aktif=D.proyek.filter(p=>p.status==='Aktif').length;
+  const selesai=D.proyek.filter(p=>p.status==='Selesai').length;
+  document.getElementById('dashSub').textContent=`${aktif} proyek aktif · ${selesai} selesai · ${D.proyek.length} total`;
+  let tk=0,tm=0,tkel=0;
+  D.proyek.forEach(p=>{const c=calcP(p);tk+=p.nilaiKontrak;tm+=c.masuk;tkel+=c.keluar});
+  const tp=tm-tkel;
+  document.getElementById('dashMetrics').innerHTML=`
+    <div class="mc c-dark"><div class="lbl">Total Nilai Kontrak</div><div class="val val-dark">${fmt(tk)}</div><div class="sub">${D.proyek.length} proyek</div></div>
+    <div class="mc c-blue"><div class="lbl">Total Diterima</div><div class="val val-blue">${fmt(tm)}</div><div class="sub">${pct(tm,tk)}% dari kontrak</div></div>
+    <div class="mc c-red"><div class="lbl">Total Pengeluaran</div><div class="val val-red">${fmt(tkel)}</div><div class="sub">${pct(tkel,tm)}% dari pemasukan</div></div>
+    <div class="mc c-${tp>=0?'green':'red'}"><div class="lbl">Total Profit</div><div class="val val-${tp>=0?'green':'red'}">${fmt(tp)}</div><div class="sub">Margin ${tm>0?Math.round(tp/tm*100):0}%</div></div>`;
+  const grid=document.getElementById('proyekGrid');
+  if(!D.proyek.length){grid.innerHTML=`<div class="card card-pad"><div class="empty">Belum ada proyek.</div></div>`;return}
+  grid.innerHTML=D.proyek.map(p=>{
+    const c=calcP(p);const pp=pct(c.masuk,p.nilaiKontrak);const pk=pct(c.keluar,p.nilaiKontrak);
+    ensureFields(p);
+    const terminBelum=(p.termin||[]).filter(t=>t.status==='Belum Ditagih').length;
+    const terminTagih=(p.termin||[]).filter(t=>t.status==='Sudah Ditagih').length;
+    return`<div class="proj-card" onclick="openDetail('${p.id}')">
+      <div class="accent-bar ${p.status.toLowerCase()}"></div>
+      <div style="padding-left:8px">
+        <div class="proj-row">
+          <div>
+            <div class="proj-meta">
+              <span class="mono">${p.id}</span>
+              <span class="badge b-${p.status.toLowerCase()}">${p.status}</span>
+              ${terminTagih?`<span style="font-size:11px;background:var(--amber-lt);color:var(--amber-dk);padding:2px 7px;border-radius:10px;font-weight:700;border:1px solid var(--amber-md)">⏳ ${terminTagih} termin menunggu</span>`:''}
+              ${terminBelum?`<span style="font-size:11px;color:var(--faint)">·  ${terminBelum} belum ditagih</span>`:''}
+            </div>
+            <div class="proj-name">${p.nama}</div>
+            <div class="proj-client">🏢 ${p.klien}${p.nomorSPK?` · SPK: ${p.nomorSPK}`:''}${p.catatan?` · ${p.catatan}`:''}</div>
+          </div>
+          <div class="proj-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-sm" onclick="openDetail('${p.id}')">Buka →</button>
+            <button class="btn btn-sm btn-del" onclick="hapusProyek('${p.id}')">✕</button>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-bottom:4px"><span>Penerimaan ${pp}%</span><span>Pengeluaran ${pk}%</span></div>
+          <div style="position:relative;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+            <div style="position:absolute;left:0;top:0;height:100%;width:${pp}%;background:var(--accent);border-radius:4px;opacity:.4"></div>
+            <div style="position:absolute;left:0;top:0;height:100%;width:${pk}%;background:${pk>80?'var(--red)':pk>60?'var(--amber)':'var(--green)'};border-radius:4px"></div>
+          </div>
+        </div>
+        <div class="proj-stats">
+          <div class="proj-stat"><div class="s-lbl">Kontrak</div><div class="s-val">${fmtK(p.nilaiKontrak)}</div></div>
+          <div class="proj-stat"><div class="s-lbl">Diterima</div><div class="s-val blue">${fmtK(c.masuk)}</div></div>
+          <div class="proj-stat"><div class="s-lbl">Pengeluaran</div><div class="s-val red">${fmtK(c.keluar)}</div></div>
+          <div class="proj-stat"><div class="s-lbl">Profit</div><div class="s-val ${c.profit>=0?'green':'red'}">${fmtK(c.profit)}</div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══ DETAIL ══
+function openDetail(id){
+  curId=id;const p=getP(id);ensureFields(p);const c=calcP(p);
+  const pp=pct(c.masuk,p.nilaiKontrak),pk=pct(c.keluar,p.nilaiKontrak);
+  document.getElementById('detHdr').innerHTML=`
+    <div class="fxb">
+      <div>
+        <div class="det-id-row"><span class="mono">${p.id}</span>${p.nomorSPK?`<span class="faint">· SPK: ${p.nomorSPK}</span>`:''}<span class="badge b-${p.status.toLowerCase()}">${p.status}</span></div>
+        <div class="det-title">${p.nama}</div>
+        <div style="color:var(--muted);font-size:13px">🏢 ${p.klien} &nbsp;·&nbsp; 📅 Mulai ${p.tanggalMulai}${p.tanggalSelesai?' · Selesai '+p.tanggalSelesai:''}</div>
+        ${p.catatan?`<div style="font-size:13px;color:var(--faint);margin-top:8px">📌 ${p.catatan}</div>`:''}
+      </div>
+      <div class="fx" style="flex-shrink:0;flex-wrap:wrap">
+        ${p.pajak&&p.pajak.aktif?`<span class="pajak-badge">🧾 PPh ${p.pajak.pph}% PPN ${p.pajak.ppn}%</span>`:''}
+        <button class="btn btn-sm" onclick="openEditProyek('${p.id}')">✏ Edit</button>
+        <button class="btn btn-sm" onclick="openPengaturanPajak()">🧾 Pajak</button>
+        <button class="btn btn-sm" onclick="simpanSebagaiTemplate()">💾 Template</button>
+        <button class="btn btn-t btn-sm" onclick="eksporPDFProyek()">📄 Ekspor PDF</button>
+      </div>
+    </div>`;
+  document.getElementById('detMetrics').innerHTML=`
+    <div class="mc c-dark"><div class="lbl">Nilai Kontrak</div><div class="val val-dark">${fmt(p.nilaiKontrak)}</div></div>
+    <div class="mc c-blue"><div class="lbl">Sudah Diterima</div><div class="val val-blue">${fmt(c.masuk)}</div><div class="sub">${pp}% dari kontrak</div></div>
+    <div class="mc c-red"><div class="lbl">Pengeluaran</div><div class="val val-red">${fmt(c.keluar)}</div><div class="sub">${pk}% dari kontrak</div></div>
+    <div class="mc c-${c.profit>=0?'green':'red'}"><div class="lbl">Profit</div><div class="val val-${c.profit>=0?'green':'red'}">${fmt(c.profit)}</div><div class="sub">Margin ${c.masuk>0?Math.round(c.profit/c.masuk*100):0}%</div></div>
+    <div class="mc c-amber"><div class="lbl">Sisa Tagihan</div><div class="val val-amber">${fmt(p.nilaiKontrak-c.masuk)}</div><div class="sub">${100-pp}% belum diterima</div></div>
+    ${p.pajak&&p.pajak.aktif?`<div class="mc c-teal"><div class="lbl">Profit After Tax</div><div class="val val-teal">${fmt(c.profit-Math.round(c.masuk*p.pajak.pph/100))}</div><div class="sub">Setelah PPh ${p.pajak.pph}%</div></div>`:''}`;
+  const kc=pk>80?'var(--red)':pk>60?'var(--amber)':'var(--green)';
+  document.getElementById('detProg').innerHTML=`
+    <div class="prog-row">
+      <div class="prog-item"><div class="p-head"><span class="p-title">💵 Realisasi Penerimaan</span><span class="p-pct" style="color:var(--accent)">${pp}%</span></div><div class="p-bar"><div class="p-fill" style="width:${pp}%;background:var(--accent)"></div></div><div class="p-sub">${fmt(c.masuk)} dari ${fmt(p.nilaiKontrak)}</div></div>
+      <div class="prog-item"><div class="p-head"><span class="p-title">💸 Realisasi Pengeluaran</span><span class="p-pct" style="color:${kc}">${pk}%</span></div><div class="p-bar"><div class="p-fill" style="width:${pk}%;background:${kc}"></div></div><div class="p-sub">${fmt(c.keluar)} dari ${fmt(p.nilaiKontrak)}</div></div>
+    </div>`;
+  showPage('pgDetail');
+  switchTab('transaksi',document.querySelector('.tab-btn'));
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  ['Transaksi','Termin','Gaji','Bon','Grafik','Catatan','Ringkasan'].forEach(t=>document.getElementById('tab'+t).style.display='none');
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='block';
+  const act=document.getElementById('tabActions');
+  if(tab==='transaksi'){act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openAddTransaksi()">＋ Transaksi</button>`;renderTransaksi()}
+  else if(tab==='termin'){act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openAddTermin()">＋ Tambah Termin</button>`;renderTermin()}
+  else if(tab==='gaji'){act.innerHTML=`<button class="btn btn-sm" onclick="openTambahAnggotaProyek()">＋ Anggota</button><button class="btn btn-sm" onclick="openSetGaji()">⚙ Set Gaji</button><button class="btn btn-p btn-sm" onclick="openBayarGaji()">💰 Bayar Gaji</button>`;renderGaji()}
+  else if(tab==='bon'){act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openAddBon()">＋ Catat Bon</button><button class="btn btn-g btn-sm" onclick="openKembaliBon()">↩ Kembali</button>`;renderBon()}
+  else if(tab==='grafik'){act.innerHTML='';renderGrafik()}
+  else if(tab==='catatan'){act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openEditCatatan()">✏ Edit Catatan</button>`;renderCatatan()}
+  else{act.innerHTML='';renderRingkasan()}
+}
+
+// ══ TRANSAKSI ══
+function kategoriTag(k){const m={'DP':'t-dp','Gaji':'t-gaji','Kas Bon':'t-bon','Lainnya':'t-lain'};return`<span class="tag ${m[k]||'t-lain'}">${k}</span>`}
+function renderTransaksi(){
+  const p=getP(curId);const sorted=[...p.transaksi].sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+  const tbody=document.getElementById('trxBody');
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="6" class="empty">Belum ada transaksi.</td></tr>`;return}
+  tbody.innerHTML=sorted.map(t=>`<tr>
+    <td><span class="faint">${t.tanggal}</span></td><td>${kategoriTag(t.kategori)}</td><td>${t.keterangan}</td>
+    <td class="tr">${t.pemasukan>0?`<span style="color:var(--green-dk);font-weight:700">+${fmt(t.pemasukan)}</span>`:'-'}</td>
+    <td class="tr">${t.pengeluaran>0?`<span style="color:var(--red-dk);font-weight:700">-${fmt(t.pengeluaran)}</span>`:'-'}</td>
+    <td><button class="btn btn-xs btn-del" onclick="hapusTrx(${t.id})">✕</button></td>
+  </tr>`).join('');
+}
+function openAddTransaksi(){
+  openModal('Tambah Transaksi',`
+    <div class="fg2"><div class="fg"><label>Tanggal</label><input id="tTgl" type="date" value="${today()}"></div><div class="fg"><label>Kategori</label><select id="tKat"><option>DP</option><option>Gaji</option><option>Kas Bon</option><option>Lainnya</option></select></div></div>
+    <div class="fg"><label>Keterangan</label><input id="tKet" placeholder="Misal: Termin I, Pembelian perangkat..."></div>
+    <div class="fg2"><div class="fg"><label>Pemasukan (Rp)</label><input id="tMasuk" type="number" placeholder="0" min="0" value="0"></div><div class="fg"><label>Pengeluaran (Rp)</label><input id="tKeluar" type="number" placeholder="0" min="0" value="0"></div></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanTrx()">Simpan</button></div>`);
+}
+function simpanTrx(){
+  const ket=document.getElementById('tKet').value.trim();const masuk=parseFloat(document.getElementById('tMasuk').value)||0;const keluar=parseFloat(document.getElementById('tKeluar').value)||0;
+  if(!ket||(!masuk&&!keluar)){alert('Keterangan dan nominal wajib diisi.');return}
+  getP(curId).transaksi.push({id:Date.now(),tanggal:document.getElementById('tTgl').value,kategori:document.getElementById('tKat').value,keterangan:ket,pemasukan:masuk,pengeluaran:keluar});
+  saveSync(D);closeModal();openDetail(curId);
+}
+function hapusTrx(tid){if(!confirm('Hapus transaksi?'))return;getP(curId).transaksi=getP(curId).transaksi.filter(t=>t.id!==tid);saveSync(D);openDetail(curId)}
+
+// ══ TERMIN ══
+const terminStatusColor={
+  'Belum Ditagih':'tb-belum',
+  'Sudah Ditagih':'tb-tagih',
+  'Sudah Dibayar':'tb-bayar'
+};
+function renderTermin(){
+  const p=getP(curId);ensureFields(p);
+  const el=document.getElementById('terminContent');
+  if(!p.termin.length){
+    el.innerHTML=`<div class="card card-pad"><div class="empty">Belum ada termin. Klik "+ Tambah Termin" untuk membuat struktur pembayaran proyek ini.</div></div>`;return;
+  }
+  const totalPersen=p.termin.reduce((s,t)=>s+Number(t.persen),0);
+  const totalNilai=p.termin.reduce((s,t)=>s+Number(t.nilai),0);
+  const sudahBayar=p.termin.filter(t=>t.status==='Sudah Dibayar').reduce((s,t)=>s+Number(t.nilai),0);
+  const ditagih=p.termin.filter(t=>t.status==='Sudah Ditagih').reduce((s,t)=>s+Number(t.nilai),0);
+  const belum=p.termin.filter(t=>t.status==='Belum Ditagih').reduce((s,t)=>s+Number(t.nilai),0);
+  el.innerHTML=`
+    <div class="mg mb16">
+      <div class="mc c-green"><div class="lbl">Sudah Dibayar</div><div class="val val-green">${fmt(sudahBayar)}</div><div class="sub">${p.termin.filter(t=>t.status==='Sudah Dibayar').length} termin</div></div>
+      <div class="mc c-amber"><div class="lbl">Menunggu Bayar</div><div class="val val-amber">${fmt(ditagih)}</div><div class="sub">${p.termin.filter(t=>t.status==='Sudah Ditagih').length} termin ditagih</div></div>
+      <div class="mc c-dark"><div class="lbl">Belum Ditagih</div><div class="val val-dark">${fmt(belum)}</div><div class="sub">${p.termin.filter(t=>t.status==='Belum Ditagih').length} termin</div></div>
+      ${totalPersen!==100?`<div class="mc c-red"><div class="lbl">⚠ Peringatan</div><div class="val val-red" style="font-size:16px">${totalPersen}%</div><div class="sub">Total persen ${totalPersen<100?'kurang dari':'lebih dari'} 100%</div></div>`:`<div class="mc c-teal"><div class="lbl">Total Termin</div><div class="val val-teal">${fmt(totalNilai)}</div><div class="sub">100% dari kontrak ✓</div></div>`}
+    </div>
+    ${p.termin.map(t=>{
+      const pct_val=pct(Number(t.nilai),p.nilaiKontrak);
+      return`<div class="termin-card">
+        <div class="termin-hdr">
+          <div><div style="font-weight:800;font-size:14px">${t.nama}</div><div class="faint">${t.catatan||''}</div></div>
+          <span class="badge ${terminStatusColor[t.status]||'tb-belum'}">${t.status}</span>
+          <div style="text-align:right"><div class="faint" style="font-size:10px">Nilai</div><div style="font-weight:800">${fmt(Number(t.nilai))}</div></div>
+          <div style="text-align:right"><div class="faint" style="font-size:10px">Porsi</div><div style="font-weight:800">${t.persen}%</div></div>
+          <div class="fx" style="gap:4px">
+            ${t.status==='Belum Ditagih'?`<button class="btn btn-xs btn-warn" onclick="ubahStatusTermin(${t.id},'Sudah Ditagih')">📤 Tagih</button>`:''}
+            ${t.status==='Sudah Ditagih'?`<button class="btn btn-xs btn-g" onclick="ubahStatusTermin(${t.id},'Sudah Dibayar')">✅ Tandai Lunas</button><button class="btn btn-xs" onclick="ubahStatusTermin(${t.id},'Belum Ditagih')">↩</button>`:''}
+            ${t.status==='Sudah Dibayar'?`<span style="color:var(--green-dk);font-size:11px;font-weight:700">✅ ${t.tanggalBayar}</span><button class="btn btn-xs" onclick="ubahStatusTermin(${t.id},'Sudah Ditagih')">↩</button>`:''}
+            <button class="btn btn-xs" onclick="openEditTermin(${t.id})">✏</button>
+            <button class="btn btn-xs btn-del" onclick="hapusTermin(${t.id})">✕</button>
+          </div>
+        </div>
+        <div class="termin-body">
+          <div class="termin-prog"><div class="termin-prog-fill" style="width:${pct_val}%;background:${t.status==='Sudah Dibayar'?'var(--green)':t.status==='Sudah Ditagih'?'var(--amber)':'var(--border-md)'}"></div></div>
+          <div style="display:flex;gap:24px;font-size:12px;color:var(--muted)">
+            ${t.tanggalTagih?`<span>📤 Ditagih: <strong>${t.tanggalTagih}</strong></span>`:'<span style="color:var(--faint)">📤 Belum ditagih</span>'}
+            ${t.tanggalBayar?`<span>💰 Dibayar: <strong>${t.tanggalBayar}</strong></span>`:'<span style="color:var(--faint)">💰 Belum dibayar</span>'}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+function openAddTermin(){
+  const p=getP(curId);
+  const usedPersen=p.termin.reduce((s,t)=>s+Number(t.persen),0);
+  const sisaPersen=Math.max(0,100-usedPersen);
+  const defaultNilai=Math.round(p.nilaiKontrak*sisaPersen/100);
+  openModal('Tambah Termin',`
+    <div class="fg2"><div class="fg"><label>Nama Termin</label><input id="tmNama" placeholder="Misal: Termin I, DP Awal, Pelunasan..."></div><div class="fg"><label>Status</label><select id="tmStatus"><option>Belum Ditagih</option><option>Sudah Ditagih</option><option>Sudah Dibayar</option></select></div></div>
+    <div class="fg2">
+      <div class="fg"><label>Persentase (%)</label><input id="tmPersen" type="number" value="${sisaPersen}" min="0" max="100" oninput="autoNilaiTermin()"></div>
+      <div class="fg"><label>Nilai (Rp) — otomatis</label><input id="tmNilai" type="number" value="${defaultNilai}" min="0"></div>
+    </div>
+    <div class="fg2"><div class="fg"><label>Tgl Ditagih</label><input id="tmTagih" type="date"></div><div class="fg"><label>Tgl Dibayar</label><input id="tmBayar" type="date"></div></div>
+    <div class="fg"><label>Catatan</label><input id="tmCatatan" placeholder="Keterangan termin..."></div>
+    <p class="faint mb8">Sisa alokasi: <strong>${sisaPersen}%</strong> (${fmt(defaultNilai)}) dari nilai kontrak ${fmt(p.nilaiKontrak)}</p>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanTermin()">Simpan</button></div>`);
+}
+function autoNilaiTermin(){
+  const p=getP(curId);const persen=parseFloat(document.getElementById('tmPersen').value)||0;
+  document.getElementById('tmNilai').value=Math.round(p.nilaiKontrak*persen/100);
+}
+function simpanTermin(){
+  const nama=document.getElementById('tmNama').value.trim();
+  if(!nama){alert('Nama termin wajib diisi.');return}
+  const p=getP(curId);
+  p.termin.push({id:Date.now(),nama,persen:parseFloat(document.getElementById('tmPersen').value)||0,
+    nilai:parseFloat(document.getElementById('tmNilai').value)||0,
+    status:document.getElementById('tmStatus').value,
+    tanggalTagih:document.getElementById('tmTagih').value,
+    tanggalBayar:document.getElementById('tmBayar').value,
+    catatan:document.getElementById('tmCatatan').value.trim()});
+  saveSync(D);closeModal();renderTermin();
+}
+function openEditTermin(tid){
+  const p=getP(curId);const t=p.termin.find(x=>x.id===tid);
+  openModal('Edit Termin',`
+    <div class="fg2"><div class="fg"><label>Nama Termin</label><input id="tmNama" value="${t.nama}"></div><div class="fg"><label>Status</label><select id="tmStatus"><option ${t.status==='Belum Ditagih'?'selected':''}>Belum Ditagih</option><option ${t.status==='Sudah Ditagih'?'selected':''}>Sudah Ditagih</option><option ${t.status==='Sudah Dibayar'?'selected':''}>Sudah Dibayar</option></select></div></div>
+    <div class="fg2"><div class="fg"><label>Persentase (%)</label><input id="tmPersen" type="number" value="${t.persen}"></div><div class="fg"><label>Nilai (Rp)</label><input id="tmNilai" type="number" value="${t.nilai}"></div></div>
+    <div class="fg2"><div class="fg"><label>Tgl Ditagih</label><input id="tmTagih" type="date" value="${t.tanggalTagih||''}"></div><div class="fg"><label>Tgl Dibayar</label><input id="tmBayar" type="date" value="${t.tanggalBayar||''}"></div></div>
+    <div class="fg"><label>Catatan</label><input id="tmCatatan" value="${t.catatan||''}"></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="updateTermin(${tid})">Simpan</button></div>`);
+}
+function updateTermin(tid){
+  const p=getP(curId);const t=p.termin.find(x=>x.id===tid);
+  t.nama=document.getElementById('tmNama').value.trim();t.status=document.getElementById('tmStatus').value;
+  t.persen=parseFloat(document.getElementById('tmPersen').value)||0;t.nilai=parseFloat(document.getElementById('tmNilai').value)||0;
+  t.tanggalTagih=document.getElementById('tmTagih').value;t.tanggalBayar=document.getElementById('tmBayar').value;
+  t.catatan=document.getElementById('tmCatatan').value.trim();
+  saveSync(D);closeModal();renderTermin();
+}
+function ubahStatusTermin(tid,status){
+  const p=getP(curId);const t=p.termin.find(x=>x.id===tid);
+  t.status=status;
+  if(status==='Sudah Ditagih'&&!t.tanggalTagih)t.tanggalTagih=today();
+  if(status==='Sudah Dibayar'&&!t.tanggalBayar)t.tanggalBayar=today();
+  saveSync(D);renderTermin();
+}
+function hapusTermin(tid){
+  if(!confirm('Hapus termin ini?'))return;
+  getP(curId).termin=getP(curId).termin.filter(t=>t.id!==tid);
+  saveSync(D);renderTermin();
+}
+
+// ══ GAJI ══
+function renderGaji(){
+  const p=getP(curId);const grid=document.getElementById('gajiGrid');
+  if(!p.gaji.length){grid.innerHTML=`<div class="card card-pad"><p class="empty">Belum ada anggota.</p></div>`;return}
+  grid.innerHTML=p.gaji.map(g=>{
+    const c=calcGaji(g);const bayarPct=g.nominalGaji>0?pct(c.bayar,g.nominalGaji):0;
+    const lunas=g.nominalGaji>0&&c.sisa<=0;
+    const last=lastDate(g.riwayat);
+    return`<div class="gaji-card">
+      <div class="g-avatar">${initials(g.anggota)}</div>
+      <div class="g-name">${g.anggota}</div>
+      <div style="font-size:11px;font-weight:700;margin-bottom:8px;color:${lunas?'var(--green-dk)':g.nominalGaji===0?'var(--faint)':'var(--amber-dk)'}">${lunas?'✅ Lunas':g.nominalGaji===0?'⚪ Nominal belum diset':'⏳ Belum lunas'}</div>
+      ${g.nominalGaji>0?`<div class="g-bar-track"><div class="g-bar-fill" style="width:${bayarPct}%;background:${bayarPct>=100?'var(--green)':'var(--amber)'}"></div></div><div class="faint" style="font-size:10px;margin-bottom:8px">${bayarPct}% terbayar</div>`:''}
+      <div class="g-nums">
+        <div class="g-num-item"><div class="n-lbl">Nominal</div><div class="n-val">${g.nominalGaji>0?fmtK(g.nominalGaji):'—'}</div></div>
+        <div class="g-num-item"><div class="n-lbl">Terbayar</div><div class="n-val" style="color:var(--green-dk)">${fmtK(c.bayar)}</div></div>
+        <div class="g-num-item"><div class="n-lbl">Sisa</div><div class="n-val" style="color:${c.sisa>0?'var(--red-dk)':'var(--green-dk)'}">${g.nominalGaji>0?(c.sisa>0?fmtK(c.sisa):'Lunas'):'—'}</div></div>
+        <div class="g-num-item"><div class="n-lbl">Tgl Terakhir</div><div class="n-val" style="color:var(--muted);font-size:11px">${last||'—'}</div></div>
+      </div>
+      <div class="g-actions">
+        <button class="btn btn-sm" style="flex:1" onclick="openRiwayatGaji('${g.anggota}')">📋 Riwayat</button>
+        <button class="btn btn-sm btn-t" onclick="cetakSlipGaji('${g.anggota}')">🖨 Slip</button>
+        <button class="btn btn-xs btn-del" onclick="hapusAnggotaDariProyek('${g.anggota}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openTambahAnggotaProyek(){
+  openModal('Tambah Anggota Tim',`
+    <p class="muted mb12">Anggota baru otomatis masuk ke daftar global.</p>
+    <div id="anggotaProyekList" class="mb16"></div>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+      <div class="lbl mb8">Tambah Baru</div>
+      <div class="fg2"><div class="fg"><label>Nama</label><input id="namaAnggotaBaru" placeholder="Nama anggota..."></div><div class="fg"><label>Nominal Gaji (Rp)</label><input id="nominalAnggotaBaru" type="number" placeholder="0" min="0"></div></div>
+      <button class="btn btn-p" style="width:100%" onclick="simpanAnggotaBaru()">＋ Tambahkan</button>
+    </div>
+    <div class="mftr"><button class="btn btn-p" onclick="closeModal()">Selesai</button></div>`);
+  renderAnggotaProyekList();
+}
+function renderAnggotaProyekList(){
+  const el=document.getElementById('anggotaProyekList');if(!el)return;
+  const p=getP(curId);
+  if(!p.gaji.length){el.innerHTML=`<p class="faint">Belum ada anggota.</p>`;return}
+  el.innerHTML=`<div class="lbl mb8">Anggota (${p.gaji.length})</div>`+p.gaji.map(g=>`
+    <div class="anggota-list-item"><div class="fx"><div class="av-sm">${initials(g.anggota)}</div><strong style="font-size:13px">${g.anggota}</strong></div>
+    <button class="btn btn-xs btn-del" onclick="hapusAnggotaDariProyek('${g.anggota}',true)">Keluarkan</button></div>`).join('');
+}
+function simpanAnggotaBaru(){
+  const nama=document.getElementById('namaAnggotaBaru').value.trim().toLowerCase();
+  const nominal=parseFloat(document.getElementById('nominalAnggotaBaru').value)||0;
+  if(!nama){alert('Nama wajib diisi.');return}
+  const p=getP(curId);
+  if(p.gaji.find(g=>g.anggota===nama)){alert(`"${nama}" sudah ada.`);return}
+  if(!D.anggota.includes(nama))D.anggota.push(nama);
+  p.gaji.push({anggota:nama,nominalGaji:nominal,riwayat:[]});
+  if(!p.bon.find(b=>b.anggota===nama))p.bon.push({anggota:nama,riwayatPinjam:[],riwayatKembali:[]});
+  saveSync(D);document.getElementById('namaAnggotaBaru').value='';document.getElementById('nominalAnggotaBaru').value='';
+  renderAnggotaProyekList();renderGaji();
+}
+function hapusAnggotaDariProyek(nama,dariModal=false){
+  if(!confirm(`Keluarkan "${nama}" dari proyek ini?`))return;
+  const p=getP(curId);p.gaji=p.gaji.filter(g=>g.anggota!==nama);p.bon=p.bon.filter(b=>b.anggota!==nama);
+  saveSync(D);if(dariModal)renderAnggotaProyekList();else closeModal();renderGaji();
+}
+function openSetGaji(){
+  const p=getP(curId);
+  openModal('Set Nominal Gaji',`
+    ${p.gaji.map(g=>`<div class="fg"><label>${g.anggota}</label><input id="gj_${g.anggota}" type="number" value="${g.nominalGaji}" min="0"></div>`).join('')}
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanNominalGaji()">Simpan</button></div>`);
+}
+function simpanNominalGaji(){
+  const p=getP(curId);p.gaji.forEach(g=>{const el=document.getElementById('gj_'+g.anggota);if(el)g.nominalGaji=parseFloat(el.value)||0});
+  saveSync(D);closeModal();renderGaji();
+}
+function openBayarGaji(){
+  const p=getP(curId);
+  openModal('Catat Pembayaran Gaji',`
+    <div class="fg2"><div class="fg"><label>Anggota</label><select id="bjAnggota">${p.gaji.map(g=>`<option>${g.anggota}</option>`).join('')}</select></div><div class="fg"><label>Tanggal</label><input id="bjTgl" type="date" value="${today()}"></div></div>
+    <div class="fg"><label>Jumlah (Rp)</label><input id="bjJml" type="number" placeholder="0" min="0"></div>
+    <div class="fg"><label>Catatan</label><input id="bjCat" placeholder="Misal: Termin I..."></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanBayarGaji()">Simpan</button></div>`);
+}
+function simpanBayarGaji(){
+  const anggota=document.getElementById('bjAnggota').value;const jml=parseFloat(document.getElementById('bjJml').value)||0;const cat=document.getElementById('bjCat').value.trim();const tgl=document.getElementById('bjTgl').value;
+  if(jml<=0){alert('Jumlah wajib diisi.');return}
+  const p=getP(curId);let g=p.gaji.find(x=>x.anggota===anggota);
+  if(!g){g={anggota,nominalGaji:0,riwayat:[]};p.gaji.push(g)}
+  g.riwayat.push({tanggal:tgl,jumlah:jml,catatan:cat});
+  p.transaksi.push({id:Date.now(),tanggal:tgl,kategori:'Gaji',keterangan:`Gaji ${anggota}${cat?' - '+cat:''}`,pemasukan:0,pengeluaran:jml});
+  saveSync(D);closeModal();renderGaji();
+}
+function openRiwayatGaji(nama){
+  const p=getP(curId);const g=p.gaji.find(x=>x.anggota===nama)||{nominalGaji:0,riwayat:[]};const c=calcGaji(g);
+  const rows=g.riwayat.length?[...g.riwayat].sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)).map(r=>`<tr><td>${r.tanggal}</td><td>${r.catatan||'—'}</td><td class="tr" style="color:var(--green-dk);font-weight:700">+${fmt(r.jumlah)}</td></tr>`).join(''):`<tr><td colspan="3" class="empty">Belum ada riwayat.</td></tr>`;
+  openModal(`Riwayat Gaji — ${nama}`,`
+    <div class="mg mb16"><div class="mc c-dark"><div class="lbl">Nominal</div><div class="val val-dark" style="font-size:16px">${g.nominalGaji>0?fmt(g.nominalGaji):'Belum diset'}</div></div><div class="mc c-green"><div class="lbl">Terbayar</div><div class="val val-green" style="font-size:16px">${fmt(c.bayar)}</div></div><div class="mc c-${c.sisa>0?'red':'green'}"><div class="lbl">Sisa</div><div class="val val-${c.sisa>0?'red':'green'}" style="font-size:16px">${g.nominalGaji>0?(c.sisa>0?fmt(c.sisa):'✅ Lunas'):'—'}</div></div></div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Tanggal</th><th>Catatan</th><th class="tr">Jumlah</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    <div class="mftr"><button class="btn btn-t" onclick="cetakSlipGaji('${nama}')">🖨 Cetak Slip</button><button class="btn btn-p" onclick="closeModal()">Tutup</button></div>`);
+}
+
+// ══ SLIP GAJI ══
+function cetakSlipGaji(nama){
+  const p=getP(curId);const g=p.gaji.find(x=>x.anggota===nama)||{nominalGaji:0,riwayat:[]};const c=calcGaji(g);
+  const tglCetak=today();
+  const riwayatRows=g.riwayat.length?g.riwayat.slice().sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)).map(r=>`<div class="slip-row"><span>${r.tanggal}${r.catatan?' · '+r.catatan:''}</span><span style="color:var(--green-dk);font-weight:700">+${fmt(r.jumlah)}</span></div>`).join(''):`<div style="color:var(--faint);padding:8px 0">Belum ada riwayat pembayaran.</div>`;
+  const slipHtml=`
+    <div class="slip-wrap" id="slipContent">
+      <div class="slip-logo"><div class="ic">📋</div><div><div class="slip-title">Slip Gaji Proyek</div><div class="faint">Dicetak: ${tglCetak}</div></div></div>
+      <div style="margin-bottom:16px">
+        <div class="slip-row"><span class="muted">Nama Anggota</span><span style="font-weight:700">${nama}</span></div>
+        <div class="slip-row"><span class="muted">Proyek</span><span style="font-weight:700">${p.nama}</span></div>
+        <div class="slip-row"><span class="muted">Klien</span><span>${p.klien}</span></div>
+        ${p.nomorSPK?`<div class="slip-row"><span class="muted">No. SPK</span><span>${p.nomorSPK}</span></div>`:''}
+        <div class="slip-row"><span class="muted">Nominal Gaji</span><span style="font-weight:700">${g.nominalGaji>0?fmt(g.nominalGaji):'Tidak diset'}</span></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px">Riwayat Pembayaran</div>
+      ${riwayatRows}
+      <div class="slip-total"><span>Total Diterima</span><span style="color:var(--green-dk)">${fmt(c.bayar)}</span></div>
+      ${g.nominalGaji>0?`<div style="display:flex;justify-content:space-between;padding:8px 14px;background:${c.sisa>0?'var(--amber-lt)':'var(--green-lt)'};border:1px solid ${c.sisa>0?'var(--amber-md)':'var(--green-md)'};border-radius:var(--r);margin-top:8px;font-weight:700"><span>Sisa Gaji</span><span style="color:${c.sisa>0?'var(--amber-dk)':'var(--green-dk)'}">${c.sisa>0?fmt(c.sisa):'✅ Lunas'}</span></div>`:''}
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:40px">
+        <div style="text-align:center"><div class="faint" style="margin-bottom:40px">Diterima oleh,</div><div style="border-top:1px solid var(--border-md);padding-top:6px;font-weight:700">${nama}</div></div>
+        <div style="text-align:center"><div class="faint" style="margin-bottom:40px">Disetujui oleh,</div><div style="border-top:1px solid var(--border-md);padding-top:6px;font-weight:700">M. Adhitya N.P.</div></div>
+      </div>
+    </div>`;
+  openModal(`🖨 Slip Gaji — ${nama}`,slipHtml+`<div class="mftr no-print"><button class="btn" onclick="closeModal()">Tutup</button><button class="btn btn-t" onclick="window.print()">🖨 Print / Simpan PDF</button></div>`);
+  document.getElementById('mboxEl').classList.add('mbox-wide');
+}
+
+// ══ KAS BON ══
+function renderBon(){
+  const p=getP(curId);const grid=document.getElementById('bonGrid');
+  if(!p.bon.length){grid.innerHTML=`<div class="card card-pad"><p class="empty">Belum ada anggota.</p></div>`;return}
+  grid.innerHTML=p.bon.map(b=>{
+    const c=calcBon(b);const allD=[...b.riwayatPinjam,...b.riwayatKembali];const last=lastDate(allD);
+    return`<div class="bon-card">
+      <div class="b-avatar" style="background:var(--purple-lt);border-color:var(--purple-md);color:var(--purple)">${initials(b.anggota)}</div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:10px">${b.anggota}</div>
+      <div class="b-nums">
+        <div class="b-num"><div class="n-lbl">Pinjaman</div><div class="n-val" style="color:var(--red-dk)">${fmtK(c.pinjam)}</div></div>
+        <div class="b-num"><div class="n-lbl">Kembali</div><div class="n-val" style="color:var(--green-dk)">${fmtK(c.kembali)}</div></div>
+        <div class="b-num"><div class="n-lbl">Sisa</div><div class="n-val" style="color:${c.sisa>0?'var(--red-dk)':'var(--green-dk)'}">${c.sisa>0?fmtK(c.sisa):'Rp0'}</div></div>
+      </div>
+      ${last?`<div class="faint mb8">Terakhir: ${last}</div>`:''}
+      <div class="b-actions"><button class="btn btn-sm" style="flex:1" onclick="openRiwayatBon('${b.anggota}')">📋 Riwayat</button></div>
+    </div>`;
+  }).join('');
+}
+function openAddBon(){
+  const p=getP(curId);
+  openModal('Catat Kas Bon',`
+    <div class="fg2"><div class="fg"><label>Anggota</label><select id="bnAnggota">${p.bon.map(b=>`<option>${b.anggota}</option>`).join('')}</select></div><div class="fg"><label>Tanggal</label><input id="bnTgl" type="date" value="${today()}"></div></div>
+    <div class="fg"><label>Jumlah (Rp)</label><input id="bnJml" type="number" placeholder="0" min="0"></div>
+    <div class="fg"><label>Keterangan</label><input id="bnKet" placeholder="Keperluan bon..."></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanBon()">Simpan</button></div>`);
+}
+function simpanBon(){
+  const anggota=document.getElementById('bnAnggota').value;const jml=parseFloat(document.getElementById('bnJml').value)||0;const ket=document.getElementById('bnKet').value.trim();const tgl=document.getElementById('bnTgl').value;
+  if(jml<=0){alert('Jumlah wajib diisi.');return}
+  const p=getP(curId);let b=p.bon.find(x=>x.anggota===anggota);if(!b){b={anggota,riwayatPinjam:[],riwayatKembali:[]};p.bon.push(b)}
+  b.riwayatPinjam.push({tanggal:tgl,jumlah:jml,keterangan:ket});
+  p.transaksi.push({id:Date.now(),tanggal:tgl,kategori:'Kas Bon',keterangan:`Kas bon ${anggota}${ket?' - '+ket:''}`,pemasukan:0,pengeluaran:jml});
+  saveSync(D);closeModal();renderBon();
+}
+function openKembaliBon(){
+  const p=getP(curId);
+  openModal('Catat Pengembalian',`
+    <div class="fg2"><div class="fg"><label>Anggota</label><select id="kbAnggota">${p.bon.map(b=>`<option>${b.anggota}</option>`).join('')}</select></div><div class="fg"><label>Tanggal</label><input id="kbTgl" type="date" value="${today()}"></div></div>
+    <div class="fg"><label>Jumlah (Rp)</label><input id="kbJml" type="number" placeholder="0" min="0"></div>
+    <div class="fg"><label>Keterangan</label><input id="kbKet" placeholder="Catatan..."></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-g" onclick="simpanKembali()">Simpan</button></div>`);
+}
+function simpanKembali(){
+  const anggota=document.getElementById('kbAnggota').value;const jml=parseFloat(document.getElementById('kbJml').value)||0;const ket=document.getElementById('kbKet').value.trim();const tgl=document.getElementById('kbTgl').value;
+  if(jml<=0){alert('Jumlah wajib diisi.');return}
+  const p=getP(curId);let b=p.bon.find(x=>x.anggota===anggota);if(!b){b={anggota,riwayatPinjam:[],riwayatKembali:[]};p.bon.push(b)}
+  b.riwayatKembali.push({tanggal:tgl,jumlah:jml,keterangan:ket});
+  saveSync(D);closeModal();renderBon();
+}
+function openRiwayatBon(nama){
+  const p=getP(curId);const b=p.bon.find(x=>x.anggota===nama)||{riwayatPinjam:[],riwayatKembali:[]};const c=calcBon(b);
+  const pR=b.riwayatPinjam.length?[...b.riwayatPinjam].sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)).map(r=>`<tr><td>${r.tanggal}</td><td>${r.keterangan||'—'}</td><td class="tr" style="color:var(--red-dk);font-weight:700">-${fmt(r.jumlah)}</td></tr>`).join(''):`<tr><td colspan="3" class="empty">Belum ada.</td></tr>`;
+  const kR=b.riwayatKembali.length?[...b.riwayatKembali].sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)).map(r=>`<tr><td>${r.tanggal}</td><td>${r.keterangan||'—'}</td><td class="tr" style="color:var(--green-dk);font-weight:700">+${fmt(r.jumlah)}</td></tr>`).join(''):`<tr><td colspan="3" class="empty">Belum ada.</td></tr>`;
+  openModal(`Riwayat Kas Bon — ${nama}`,`
+    <div class="mg mb16"><div class="mc c-red"><div class="lbl">Total Pinjam</div><div class="val val-red" style="font-size:16px">${fmt(c.pinjam)}</div></div><div class="mc c-green"><div class="lbl">Dikembalikan</div><div class="val val-green" style="font-size:16px">${fmt(c.kembali)}</div></div><div class="mc c-${c.sisa>0?'red':'green'}"><div class="lbl">Sisa</div><div class="val val-${c.sisa>0?'red':'green'}" style="font-size:16px">${c.sisa>0?fmt(c.sisa):'Lunas'}</div></div></div>
+    <div style="font-size:11px;font-weight:700;color:var(--red-dk);text-transform:uppercase;margin-bottom:8px">Riwayat Pinjaman</div>
+    <div class="card mb12"><div class="tw"><table><thead><tr><th>Tanggal</th><th>Keterangan</th><th class="tr">Jumlah</th></tr></thead><tbody>${pR}</tbody></table></div></div>
+    <div style="font-size:11px;font-weight:700;color:var(--green-dk);text-transform:uppercase;margin-bottom:8px">Riwayat Pengembalian</div>
+    <div class="card"><div class="tw"><table><thead><tr><th>Tanggal</th><th>Keterangan</th><th class="tr">Jumlah</th></tr></thead><tbody>${kR}</tbody></table></div></div>
+    <div class="mftr"><button class="btn btn-p" onclick="closeModal()">Tutup</button></div>`);
+}
+
+// ══ GRAFIK ══
+function renderGrafik(){
+  const p=getP(curId);
+  // Kelompokkan per bulan
+  const bulanMap={};
+  p.transaksi.forEach(t=>{
+    const bln=t.tanggal.slice(0,7);
+    if(!bulanMap[bln])bulanMap[bln]={masuk:0,keluar:0};
+    bulanMap[bln].masuk+=t.pemasukan;
+    bulanMap[bln].keluar+=t.pengeluaran;
+  });
+  const labels=Object.keys(bulanMap).sort();
+  const dataMasuk=labels.map(l=>bulanMap[l].masuk);
+  const dataKeluar=labels.map(l=>bulanMap[l].keluar);
+  const dataProfit=labels.map(l=>bulanMap[l].masuk-bulanMap[l].keluar);
+  const labelsFmt=labels.map(l=>{const[y,m]=l.split('-');const mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];return mn[parseInt(m)-1]+' '+y});
+
+  document.getElementById('grafikContent').innerHTML=`
+    <div class="chart-wrap">
+      <div class="fxb mb16">
+        <h3>📊 Arus Kas per Bulan</h3>
+        <div class="fx" style="font-size:12px">
+          <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#2563eb;display:inline-block"></span>Pemasukan</span>
+          <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#dc2626;display:inline-block"></span>Pengeluaran</span>
+          <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:#16a34a;display:inline-block"></span>Profit</span>
+        </div>
+      </div>
+      ${!labels.length?'<div class="empty">Belum ada transaksi untuk ditampilkan.</div>':'<canvas id="arusKasChart" height="80"></canvas>'}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="chart-wrap">
+        <h3 class="mb16">💰 Komposisi Pengeluaran</h3>
+        ${!p.transaksi.filter(t=>t.pengeluaran>0).length?'<div class="empty">Belum ada pengeluaran.</div>':'<canvas id="komposisiChart" height="140"></canvas>'}
+      </div>
+      <div class="chart-wrap">
+        <h3 class="mb12">📈 Ringkasan Kumulatif</h3>
+        <div id="kumulatifStats"></div>
+      </div>
+    </div>`;
+
+  if(labels.length){
+    if(chartInst)chartInst.destroy();
+    chartInst=new Chart(document.getElementById('arusKasChart').getContext('2d'),{
+      type:'bar',
+      data:{labels:labelsFmt,datasets:[
+        {label:'Pemasukan',data:dataMasuk,backgroundColor:'rgba(37,99,235,.7)',borderRadius:4},
+        {label:'Pengeluaran',data:dataKeluar,backgroundColor:'rgba(220,38,38,.65)',borderRadius:4},
+        {type:'line',label:'Profit',data:dataProfit,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.1)',tension:.3,fill:true,pointBackgroundColor:'#16a34a',pointRadius:4}
+      ]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}`}}},scales:{y:{ticks:{callback:v=>fmtK(v)},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false}}}}
+    });
+  }
+
+  // Pie komposisi kategori pengeluaran
+  const kel=p.transaksi.filter(t=>t.pengeluaran>0);
+  if(kel.length){
+    const katMap={};kel.forEach(t=>{if(!katMap[t.kategori])katMap[t.kategori]=0;katMap[t.kategori]+=t.pengeluaran});
+    const katLabels=Object.keys(katMap);const katVals=katLabels.map(k=>katMap[k]);
+    const colors=['rgba(37,99,235,.8)','rgba(217,119,6,.8)','rgba(124,58,237,.8)','rgba(220,38,38,.8)','rgba(13,148,136,.8)'];
+    new Chart(document.getElementById('komposisiChart').getContext('2d'),{
+      type:'doughnut',
+      data:{labels:katLabels,datasets:[{data:katVals,backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.raw)}`}}}}
+    });
+  }
+
+  // Stats kumulatif
+  const c=calcP(p);
+  let kumMasuk=0,kumKeluar=0;
+  const kumRows=labels.map((l,i)=>{kumMasuk+=dataMasuk[i];kumKeluar+=dataKeluar[i];return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--muted)">${labelsFmt[i]}</span><span style="color:${dataProfit[i]>=0?'var(--green-dk)':'var(--red-dk)'};font-weight:700">${dataProfit[i]>=0?'+':''}${fmtK(dataProfit[i])}</span></div>`}).join('');
+  document.getElementById('kumulatifStats').innerHTML=kumRows||`<p class="faint">Belum ada data.</p>`;
+}
+
+// ══ CATATAN ══
+function renderCatatan(){
+  const p=getP(curId);ensureFields(p);
+  document.getElementById('catatanContent').innerHTML=`
+    <div class="catatan-section">
+      <div>
+        <div class="card card-pad mb12">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px">👤 Kontak & Rekening</div>
+          <div class="contact-card mb8" style="margin-bottom:8px">
+            <div class="contact-icon" style="background:var(--accent-lt)">👤</div>
+            <div><div class="faint mb4">PIC / Narahubung</div><div style="font-weight:700;font-size:13px">${p.kontakPIC||'<span style="color:var(--faint)">Belum diisi</span>'}</div></div>
+          </div>
+          <div class="contact-card mb8">
+            <div class="contact-icon" style="background:var(--green-lt)">🏦</div>
+            <div><div class="faint mb4">Rekening Klien</div><div style="font-weight:700;font-size:13px">${p.nomorRekening?`${p.nomorRekening} (${p.namaBank||'—'})`:'<span style="color:var(--faint)">Belum diisi</span>'}</div></div>
+          </div>
+          ${p.dokumenLink?`<div class="contact-card"><div class="contact-icon" style="background:var(--amber-lt)">📎</div><div><div class="faint mb4">Link Dokumen</div><a href="${p.dokumenLink}" target="_blank" style="color:var(--accent);font-size:13px;font-weight:600;word-break:break-all">${p.dokumenLink}</a></div></div>`:''}
+        </div>
+        <div class="card card-pad">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px">📅 Info Proyek</div>
+          <div style="display:grid;gap:8px">
+            <div class="contact-card"><div class="contact-icon" style="background:var(--surface-2)">📋</div><div><div class="faint mb4">ID & SPK</div><div style="font-size:13px;font-weight:700">${p.id}${p.nomorSPK?' · '+p.nomorSPK:''}</div></div></div>
+            <div class="contact-card"><div class="contact-icon" style="background:var(--surface-2)">📅</div><div><div class="faint mb4">Periode</div><div style="font-size:13px;font-weight:700">${p.tanggalMulai} → ${p.tanggalSelesai||'Belum selesai'}</div></div></div>
+            <div class="contact-card"><div class="contact-icon" style="background:var(--surface-2)">💰</div><div><div class="faint mb4">Nilai Kontrak</div><div style="font-size:13px;font-weight:700">${fmt(p.nilaiKontrak)}</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-pad">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px">📝 Catatan Internal</div>
+          ${p.catatanProyek?`<div style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text)">${p.catatanProyek}</div>`:`<div style="color:var(--faint);font-size:13px;padding:16px 0">Belum ada catatan. Klik "Edit Catatan" untuk menambahkan catatan internal, password server, atau informasi penting lainnya.</div>`}
+        </div>
+      </div>
+    </div>`;
+}
+function openEditCatatan(){
+  const p=getP(curId);ensureFields(p);
+  openModal('Edit Catatan & Kontak',`
+    <div class="fg2"><div class="fg"><label>PIC / Narahubung</label><input id="cPIC" value="${p.kontakPIC||''}" placeholder="Nama & nomor HP..."></div><div class="fg"><label>Nama Bank</label><input id="cBank" value="${p.namaBank||''}" placeholder="BRI, BCA, Mandiri..."></div></div>
+    <div class="fg"><label>Nomor Rekening</label><input id="cRek" value="${p.nomorRekening||''}" placeholder="Nomor rekening klien..."></div>
+    <div class="fg"><label>Link Dokumen (Google Drive / SPK)</label><input id="cDok" value="${p.dokumenLink||''}" placeholder="https://drive.google.com/..."></div>
+    <div class="fg"><label>Catatan Internal</label><textarea id="cCatatan" placeholder="Password server, catatan teknis, info penting lainnya...">${p.catatanProyek||''}</textarea></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanCatatan()">Simpan</button></div>`);
+}
+function simpanCatatan(){
+  const p=getP(curId);ensureFields(p);
+  p.kontakPIC=document.getElementById('cPIC').value.trim();p.namaBank=document.getElementById('cBank').value.trim();
+  p.nomorRekening=document.getElementById('cRek').value.trim();p.dokumenLink=document.getElementById('cDok').value.trim();
+  p.catatanProyek=document.getElementById('cCatatan').value.trim();
+  saveSync(D);closeModal();renderCatatan();
+}
+
+// ══ RINGKASAN ══
+function renderRingkasan(){
+  const p=getP(curId);const c=calcP(p);
+  const bonTotal=p.bon.reduce((s,b)=>s+calcBon(b).sisa,0);
+  const gajiSisaTotal=p.gaji.filter(g=>g.nominalGaji>0).reduce((s,g)=>s+calcGaji(g).sisa,0);
+  const trxMasuk=p.transaksi.filter(t=>t.pemasukan>0).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+  const trxKeluar=p.transaksi.filter(t=>t.pengeluaran>0).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+  const riList=(list,col,sign)=>list.length?list.map(t=>`<div class="rin-list-item"><div><div style="font-size:13px">${t.keterangan}</div><div class="faint">${t.tanggal} · ${t.kategori}</div></div><div style="white-space:nowrap;font-weight:700;color:${col}">${sign}${t.pemasukan>0?fmt(t.pemasukan):fmt(t.pengeluaran)}</div></div>`).join(''):`<p class="faint" style="padding:8px 0">Belum ada data.</p>`;
+  document.getElementById('ringkasanContent').innerHTML=`
+    <div class="rin-hero">
+      <div class="fxb">
+        <div><div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Profit Bersih Proyek</div><div class="rin-profit-val" style="color:${c.profit>=0?'var(--green-dk)':'var(--red-dk)'}">${fmt(c.profit)}</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;text-align:right">
+          <div><div class="faint mb4" style="font-size:11px">Sisa Tagihan</div><div style="font-size:16px;font-weight:800;color:var(--amber-dk)">${fmt(p.nilaiKontrak-c.masuk)}</div></div>
+          <div><div class="faint mb4" style="font-size:11px">Sisa Gaji</div><div style="font-size:16px;font-weight:800;color:${gajiSisaTotal>0?'var(--red-dk)':'var(--green-dk)'}">${fmt(gajiSisaTotal)}</div></div>
+          <div><div class="faint mb4" style="font-size:11px">Sisa Bon</div><div style="font-size:16px;font-weight:800;color:${bonTotal>0?'var(--red-dk)':'var(--green-dk)'}">${fmt(bonTotal)}</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rin-grid">
+      <div class="card card-pad"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--green-dk);margin-bottom:12px">💵 Pemasukan</div>${riList(trxMasuk,'var(--green-dk)','+')}
+        <div class="rin-total"><span>Total</span><span style="color:var(--green-dk)">${fmt(c.masuk)}</span></div></div>
+      <div class="card card-pad"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red-dk);margin-bottom:12px">💸 Pengeluaran</div>${riList(trxKeluar,'var(--red-dk)','-')}
+        <div class="rin-total"><span>Total</span><span style="color:var(--red-dk)">${fmt(c.keluar)}</span></div></div>
+    </div>
+    <div class="card card-pad mb12">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--amber-dk);margin-bottom:12px">💰 Rekap Gaji Tim</div>
+      <div style="display:grid;gap:8px">
+        ${p.gaji.map(g=>{const cg=calcGaji(g);const bp=g.nominalGaji>0?pct(cg.bayar,g.nominalGaji):0;return`<div style="display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:12px;padding:10px 12px;background:var(--surface-2);border-radius:var(--r);border:1px solid var(--border)">
+          <div class="av-sm">${initials(g.anggota)}</div>
+          <div><div style="font-weight:700;font-size:13px">${g.anggota}</div>${g.nominalGaji>0?`<div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;width:100px"><div style="height:100%;width:${bp}%;background:${bp>=100?'var(--green)':'var(--amber)'};border-radius:2px"></div></div>`:''}</div>
+          <div style="text-align:right"><div class="faint" style="font-size:10px">Terbayar</div><div style="font-weight:700;color:var(--green-dk);font-size:13px">${fmt(cg.bayar)}</div></div>
+          <div style="text-align:right"><div class="faint" style="font-size:10px">Sisa</div><div style="font-weight:700;font-size:13px;color:${cg.sisa>0?'var(--red-dk)':'var(--green-dk)'}">${g.nominalGaji>0?(cg.sisa>0?fmt(cg.sisa):'Lunas'):'—'}</div></div>
+        </div>`}).join('')||'<p class="faint">Belum ada anggota.</p>'}
+      </div>
+    </div>
+    <div class="card card-pad">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);margin-bottom:12px">🪙 Rekap Kas Bon</div>
+      <div style="display:grid;gap:8px">
+        ${p.bon.map(b=>{const cb=calcBon(b);return`<div style="display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:12px;padding:10px 12px;background:var(--surface-2);border-radius:var(--r);border:1px solid var(--border)">
+          <div class="av-sm av-purple">${initials(b.anggota)}</div>
+          <div style="font-weight:700;font-size:13px">${b.anggota}</div>
+          <div style="text-align:right"><div class="faint" style="font-size:10px">Pinjam</div><div style="font-weight:700;color:var(--red-dk);font-size:13px">${fmt(cb.pinjam)}</div></div>
+          <div style="text-align:right"><div class="faint" style="font-size:10px">Kembali</div><div style="font-weight:700;color:var(--green-dk);font-size:13px">${fmt(cb.kembali)}</div></div>
+          <div style="text-align:right"><div class="faint" style="font-size:10px">Sisa</div><div style="font-weight:700;font-size:13px;color:${cb.sisa>0?'var(--red-dk)':'var(--green-dk)'}">${cb.sisa>0?fmt(cb.sisa):'Rp0'}</div></div>
+        </div>`}).join('')||'<p class="faint">Belum ada anggota.</p>'}
+      </div>
+    </div>`;
+}
+
+// ══ KELOLA ANGGOTA GLOBAL ══
+function openKelolaAnggota(){
+  openModal('Kelola Anggota Tim',`
+    <p class="muted mb12">Daftar global. Berlaku untuk semua proyek baru.</p>
+    <div id="anggotaList" class="mb16"></div>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+      <div class="fg2"><div class="fg"><label>Nama Baru</label><input id="newAnggota" placeholder="Nama anggota..."></div><div class="fg" style="display:flex;align-items:flex-end"><button class="btn btn-p" style="width:100%;margin-bottom:14px" onclick="tambahAnggota()">＋ Tambah</button></div></div>
+    </div>
+    <div class="mftr"><button class="btn btn-p" onclick="closeModal()">Selesai</button></div>`);
+  renderAnggotaList();
+}
+function renderAnggotaList(){
+  const el=document.getElementById('anggotaList');if(!el)return;
+  el.innerHTML=D.anggota.length?D.anggota.map(a=>`<div class="anggota-list-item"><div class="fx"><div class="av-sm">${initials(a)}</div><strong style="font-size:13px">${a}</strong></div><button class="btn btn-xs btn-del" onclick="hapusAnggota('${a}')">Hapus</button></div>`).join(''):`<p class="faint">Belum ada anggota.</p>`;
+}
+function tambahAnggota(){
+  const nama=document.getElementById('newAnggota').value.trim().toLowerCase();
+  if(!nama){alert('Nama wajib diisi.');return}if(D.anggota.includes(nama)){alert('Sudah ada.');return}
+  D.anggota.push(nama);saveSync(D);document.getElementById('newAnggota').value='';renderAnggotaList();
+}
+function hapusAnggota(nama){
+  if(!confirm(`Hapus "${nama}"?`))return;D.anggota=D.anggota.filter(a=>a!==nama);
+  D.proyek.forEach(p=>{p.gaji=p.gaji.filter(g=>g.anggota!==nama);p.bon=p.bon.filter(b=>b.anggota!==nama)});
+  saveSync(D);renderAnggotaList();
+}
+
+// ══ PROYEK CRUD ══
+function openAddProyek(){
+  const n=D.proyek.length+1;
+  D.templates=D.templates||[];
+  openModal('Tambah Proyek Baru',`
+    <div class="fg"><label>ID Proyek</label><input value="Proyek-${String(n).padStart(3,'0')}" readonly></div>
+    ${D.templates&&D.templates.length?`<div class="fg"><label>Pakai Template (opsional)</label><select id="fTemplate"><option value="">-- Tanpa template --</option>${(D.templates||[]).map(t=>'<option value="'+t.id+'">'+t.nama+' ('+t.termin.length+' termin, '+t.anggota.length+' anggota)</option>').join('')}</select></div>`:''}
+    <div class="fg2"><div class="fg"><label>Nama Proyek *</label><input id="fNama" placeholder="Nama proyek..."></div><div class="fg"><label>Klien *</label><input id="fKlien" placeholder="Nama klien..."></div></div>
+    <div class="fg2"><div class="fg"><label>Nilai Kontrak (Rp)</label><input id="fKontrak" type="number" placeholder="0" min="0"></div><div class="fg"><label>Nomor SPK</label><input id="fSPK" placeholder="No. SPK..."></div></div>
+    <div class="fg2"><div class="fg"><label>Tanggal Mulai</label><input id="fMulai" type="date" value="${today()}"></div><div class="fg"><label>Status</label><select id="fStatus"><option>Aktif</option><option>Selesai</option><option>Batal</option></select></div></div>
+    <div class="fg"><label>Catatan</label><input id="fCatatan" placeholder="Deskripsi singkat..."></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanProyek()">Simpan</button></div>`);
+}
+function simpanProyek(){
+  const nama=document.getElementById('fNama').value.trim();const klien=document.getElementById('fKlien').value.trim();
+  if(!nama||!klien){alert('Nama dan klien wajib diisi.');return}
+  const n=D.proyek.length+1;
+  const tmplId=document.getElementById('fTemplate')?.value;
+  const tmpl=tmplId?(D.templates||[]).find(t=>t.id==tmplId):null;
+  const newTermin=tmpl?(tmpl.termin||[]).map(t=>({id:Date.now()+Math.random(),nama:t.nama,persen:t.persen,nilai:Math.round((parseFloat(document.getElementById('fKontrak').value)||0)*t.persen/100),status:'Belum Ditagih',tanggalTagih:'',tanggalBayar:'',catatan:t.catatan||''})):[];
+  const newAnggota=tmpl?(tmpl.anggota||[]).map(a=>a.anggota).filter(a=>!D.anggota.includes(a)):[];
+  newAnggota.forEach(a=>D.anggota.push(a));
+  const allAnggota=[...new Set([...D.anggota,...(tmpl?(tmpl.anggota||[]).map(a=>a.anggota):[])]) ];
+  const newGaji=tmpl?(tmpl.anggota||[]).map(a=>({anggota:a.anggota,nominalGaji:a.nominalGaji,riwayat:[]})):D.anggota.map(a=>({anggota:a,nominalGaji:0,riwayat:[]}));
+  const newBon=allAnggota.map(a=>({anggota:a,riwayatPinjam:[],riwayatKembali:[]}));
+  D.proyek.push({id:'Proyek-'+String(n).padStart(3,'0'),nama,klien,nilaiKontrak:parseFloat(document.getElementById('fKontrak').value)||0,nomorSPK:document.getElementById('fSPK').value.trim(),tanggalMulai:document.getElementById('fMulai').value,tanggalSelesai:'',status:document.getElementById('fStatus').value,catatan:document.getElementById('fCatatan').value.trim(),kontakPIC:'',nomorRekening:'',namaBank:'',catatanProyek:'',dokumenLink:'',termin:newTermin,pajak:tmpl?tmpl.pajak:{aktif:false,pph:2,ppn:11},transaksi:[],gaji:newGaji,bon:newBon});
+  saveSync(D);closeModal();renderDash();
+}
+function openEditProyek(id){
+  const p=getP(id);
+  openModal('Edit Proyek',`
+    <div class="fg2"><div class="fg"><label>Nama</label><input id="fNama" value="${p.nama}"></div><div class="fg"><label>Klien</label><input id="fKlien" value="${p.klien}"></div></div>
+    <div class="fg2"><div class="fg"><label>Nilai Kontrak (Rp)</label><input id="fKontrak" type="number" value="${p.nilaiKontrak}"></div><div class="fg"><label>Nomor SPK</label><input id="fSPK" value="${p.nomorSPK||''}"></div></div>
+    <div class="fg2"><div class="fg"><label>Tanggal Mulai</label><input id="fMulai" type="date" value="${p.tanggalMulai}"></div><div class="fg"><label>Tanggal Selesai</label><input id="fSelesai" type="date" value="${p.tanggalSelesai||''}"></div></div>
+    <div class="fg"><label>Status</label><select id="fStatus"><option ${p.status==='Aktif'?'selected':''}>Aktif</option><option ${p.status==='Selesai'?'selected':''}>Selesai</option><option ${p.status==='Batal'?'selected':''}>Batal</option></select></div>
+    <div class="fg"><label>Catatan</label><input id="fCatatan" value="${p.catatan||''}"></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="updateProyek('${id}')">Simpan</button></div>`);
+}
+function updateProyek(id){
+  const p=getP(id);p.nama=document.getElementById('fNama').value.trim();p.klien=document.getElementById('fKlien').value.trim();p.nilaiKontrak=parseFloat(document.getElementById('fKontrak').value)||0;p.nomorSPK=document.getElementById('fSPK').value.trim();p.tanggalMulai=document.getElementById('fMulai').value;p.tanggalSelesai=document.getElementById('fSelesai').value;p.status=document.getElementById('fStatus').value;p.catatan=document.getElementById('fCatatan').value.trim();
+  saveSync(D);closeModal();openDetail(id);
+}
+function hapusProyek(id){if(!confirm('Hapus proyek ini?'))return;D.proyek=D.proyek.filter(p=>p.id!==id);saveSync(D);renderDash()}
+
+// ══ MODAL ══
+function openModal(title,html){document.getElementById('mboxEl').classList.remove('mbox-wide');document.getElementById('mTitle').textContent=title;document.getElementById('mBody').innerHTML=html;document.getElementById('modal').classList.add('open')}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+initAuth();
+
+// ══ EDIT NAMA INSTANSI ══
+function openEditInstansi(){
+  openModal('⚙ Pengaturan Aplikasi',`
+    <div class="fg">
+      <label>Nama Aplikasi / Instansi</label>
+      <input id="fInstansi" value="${D.namaInstansi||'Pencatatan Proyek'}" placeholder="Misal: CV Kreatif Multi Usaha...">
+      <div class="faint" style="margin-top:5px">Nama ini tampil di header, halaman login, dan laporan PDF.</div>
+    </div>
+    <div class="mftr">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="btn btn-p" onclick="simpanNamaInstansi()">Simpan</button>
+    </div>`);
+}
+function simpanNamaInstansi(){
+  const nama=document.getElementById('fInstansi').value.trim();
+  if(!nama){alert('Nama tidak boleh kosong.');return;}
+  D.namaInstansi=nama;
+  saveSync(D);
+  const inst=nama;
+  const hdrEl=document.getElementById('hdrInstansi');
+  if(hdrEl)hdrEl.textContent=inst;
+  const loginEl=document.getElementById('loginInstansi');
+  if(loginEl)loginEl.textContent=inst;
+  document.title='Pencatatan Proyek · '+inst;
+  closeModal();
+}
+
+// ══ FITUR 1: EKSPOR PDF LAPORAN ══
+function eksporPDFProyek(){
+  const p=getP(curId);ensureFields(p);const c=calcP(p);
+  const pajak=p.pajak||{aktif:false,pph:2,ppn:11};
+  const nilaiPPh=pajak.aktif?Math.round(c.masuk*pajak.pph/100):0;
+  const nilaiPPN=pajak.aktif?Math.round(p.nilaiKontrak*pajak.ppn/100):0;
+  const profitAfterTax=c.profit-nilaiPPh;
+  const tglCetak=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  const terminRows=(p.termin||[]).map(t=>`
+    <tr><td>${t.nama}</td><td>${t.persen}%</td><td>${fmt(t.nilai)}</td>
+    <td><span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${t.status==='Sudah Dibayar'?'#dcfce7':t.status==='Sudah Ditagih'?'#fef3c7':'#f1f5f9'};color:${t.status==='Sudah Dibayar'?'#15803d':t.status==='Sudah Ditagih'?'#b45309':'#64748b'}">${t.status}</span></td>
+    <td>${t.tanggalBayar||'-'}</td></tr>`).join('');
+  const trxRows=p.transaksi.slice().sort((a,b)=>new Date(a.tanggal)-new Date(b.tanggal)).map(t=>`
+    <tr><td>${t.tanggal}</td><td>${t.kategori}</td><td>${t.keterangan}</td>
+    <td style="text-align:right;color:#15803d;font-weight:600">${t.pemasukan>0?fmt(t.pemasukan):'-'}</td>
+    <td style="text-align:right;color:#b91c1c;font-weight:600">${t.pengeluaran>0?fmt(t.pengeluaran):'-'}</td></tr>`).join('');
+  const gajiRows=p.gaji.map(g=>{const cg=calcGaji(g);return`<tr><td>${g.anggota}</td><td>${g.nominalGaji>0?fmt(g.nominalGaji):'Belum diset'}</td><td style="color:#15803d;font-weight:600">${fmt(cg.bayar)}</td><td style="color:${cg.sisa>0?'#b91c1c':'#15803d'};font-weight:600">${g.nominalGaji>0?(cg.sisa>0?fmt(cg.sisa):'Lunas'):'—'}</td></tr>`}).join('');
+  const bonRows=p.bon.map(b=>{const cb=calcBon(b);return`<tr><td>${b.anggota}</td><td style="color:#b91c1c">${fmt(cb.pinjam)}</td><td style="color:#15803d">${fmt(cb.kembali)}</td><td style="color:${cb.sisa>0?'#b91c1c':'#15803d'};font-weight:700">${cb.sisa>0?fmt(cb.sisa):'Lunas'}</td></tr>`}).join('');
+
+  const css=`<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:12px;color:#1a1a18;line-height:1.5;padding:32px}
+    h1{font-size:20px;font-weight:800;margin-bottom:4px}.sub{color:#64645c;font-size:12px;margin-bottom:20px}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2563eb;padding-bottom:16px;margin-bottom:20px}
+    .brand{font-size:18px;font-weight:900;color:#2563eb}.date{font-size:11px;color:#a0a098;text-align:right}
+    .section{margin-bottom:20px}.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b6b63;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e4e4da}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+    .metric{background:#f8f8f5;border:1px solid #e4e4da;border-radius:8px;padding:12px;border-top:3px solid #2563eb}
+    .metric.green{border-top-color:#16a34a}.metric.red{border-top-color:#dc2626}.metric.amber{border-top-color:#d97706}
+    .metric .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b6b63;margin-bottom:5px}
+    .metric .val{font-size:16px;font-weight:800}.val-g{color:#15803d}.val-r{color:#b91c1c}.val-b{color:#1d4ed8}.val-a{color:#b45309}
+    table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:4px}
+    th{background:#f1f5f9;padding:7px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;border-bottom:1px solid #e2e8f0}
+    td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .prog{height:6px;background:#e4e4da;border-radius:3px;overflow:hidden;margin:8px 0}
+    .prog-fill{height:100%;border-radius:3px}
+    .pajak-box{background:#fffbeb;border:1px solid #fed7aa;border-radius:8px;padding:12px 14px;margin-top:12px}
+    .ttd{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:32px;padding-top:20px;border-top:1px solid #e4e4da}
+    .ttd-item{text-align:center}.ttd-space{margin-top:48px;border-top:1px solid #64645c;padding-top:6px;font-weight:700}
+    footer{margin-top:24px;padding-top:12px;border-top:1px solid #e4e4da;font-size:10px;color:#a0a098;text-align:center}
+    @media print{body{padding:16px}}</style>`;
+
+  const html=`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan ${p.nama}</title>${css}</head><body>
+    <div class="hdr">
+      <div><div class="brand">📋 Laporan Keuangan Proyek</div><h1>${p.nama}</h1><div class="sub">🏢 ${p.klien}${p.nomorSPK?' · SPK: '+p.nomorSPK:''} · Mulai ${p.tanggalMulai}${p.tanggalSelesai?' · Selesai '+p.tanggalSelesai:''}</div></div>
+      <div class="date"><div>Dicetak</div><div style="font-size:14px;font-weight:700;color:#1a1a18">${tglCetak}</div><div style="color:#2563eb;font-weight:700">${p.status}</div></div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="lbl">Nilai Kontrak</div><div class="val val-b">${fmt(p.nilaiKontrak)}</div></div>
+      <div class="metric green"><div class="lbl">Total Diterima</div><div class="val val-g">${fmt(c.masuk)}</div></div>
+      <div class="metric red"><div class="lbl">Total Pengeluaran</div><div class="val val-r">${fmt(c.keluar)}</div></div>
+      <div class="metric ${c.profit>=0?'green':'red'}"><div class="lbl">Profit Kotor</div><div class="val ${c.profit>=0?'val-g':'val-r'}">${fmt(c.profit)}</div></div>
+    </div>
+    <div class="prog"><div class="prog-fill" style="width:${pct(c.masuk,p.nilaiKontrak)}%;background:#2563eb"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#a0a098;margin-bottom:16px"><span>Penerimaan ${pct(c.masuk,p.nilaiKontrak)}%</span><span>Pengeluaran ${pct(c.keluar,p.nilaiKontrak)}%</span></div>
+    ${pajak.aktif?`<div class="pajak-box"><div class="section-title" style="border:none;margin-bottom:8px">🧾 Perhitungan Pajak</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><div><div class="lbl">PPh ${pajak.pph}%</div><div class="val val-r" style="font-size:14px">${fmt(nilaiPPh)}</div></div><div><div class="lbl">PPN ${pajak.ppn}%</div><div class="val val-r" style="font-size:14px">${fmt(nilaiPPN)}</div></div><div><div class="lbl">Profit After Tax</div><div class="val ${profitAfterTax>=0?'val-g':'val-r'}" style="font-size:14px">${fmt(profitAfterTax)}</div></div></div></div>`:''}
+    ${(p.termin||[]).length?`<div class="section"><div class="section-title">🎯 Status Termin Pembayaran</div><table><thead><tr><th>Nama Termin</th><th>%</th><th>Nilai</th><th>Status</th><th>Tgl Bayar</th></tr></thead><tbody>${terminRows}</tbody></table></div>`:''}
+    <div class="section"><div class="section-title">📄 Riwayat Transaksi</div><table><thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan</th><th style="text-align:right">Pemasukan</th><th style="text-align:right">Pengeluaran</th></tr></thead><tbody>${trxRows||'<tr><td colspan="5" style="text-align:center;color:#a0a098;padding:16px">Belum ada transaksi</td></tr>'}</tbody></table></div>
+    ${p.gaji.length?`<div class="section"><div class="section-title">💰 Rekap Gaji Tim</div><table><thead><tr><th>Anggota</th><th>Nominal Gaji</th><th>Terbayar</th><th>Sisa</th></tr></thead><tbody>${gajiRows}</tbody></table></div>`:''}
+    ${p.bon.length?`<div class="section"><div class="section-title">🪙 Rekap Kas Bon Tim</div><table><thead><tr><th>Anggota</th><th>Pinjaman</th><th>Dikembalikan</th><th>Sisa</th></tr></thead><tbody>${bonRows}</tbody></table></div>`:''}
+    ${p.kontakPIC||p.catatanProyek?`<div class="section"><div class="section-title">📌 Informasi Tambahan</div>${p.kontakPIC?`<div style="margin-bottom:6px"><strong>PIC/Narahubung:</strong> ${p.kontakPIC}</div>`:''}${p.nomorRekening?`<div style="margin-bottom:6px"><strong>Rekening:</strong> ${p.nomorRekening} (${p.namaBank})</div>`:''}${p.catatanProyek?`<div><strong>Catatan:</strong><br>${p.catatanProyek}</div>`:''}</div>`:''}
+    <div class="ttd"><div class="ttd-item"><div>Mengetahui,</div><div class="ttd-space">M. Adhitya Nugraha Pratama</div><div style="font-size:10px;color:#64645c">Project Manager</div></div><div class="ttd-item"><div>Menyetujui,</div><div class="ttd-space">${p.klien}</div><div style="font-size:10px;color:#64645c">Pemberi Kerja</div></div></div>
+    <footer>Laporan ini digenerate otomatis oleh Aplikasi Pencatatan Proyek · ${D.namaInstansi||"Pencatatan Proyek"} · ${tglCetak}</footer>
+  </body></html>`;
+
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  setTimeout(()=>{w.print()},500);
+}
+
+// ══ FITUR 4: TEMPLATE PROYEK ══
+function simpanSebagaiTemplate(){
+  const p=getP(curId);
+  const nama=prompt(`Nama template untuk "${p.nama}":`);
+  if(!nama)return;
+  const tmpl={id:Date.now(),nama,deskripsi:`Template dari proyek ${p.nama}`,
+    termin:(p.termin||[]).map(t=>({nama:t.nama,persen:t.persen,catatan:t.catatan})),
+    anggota:p.gaji.map(g=>({anggota:g.anggota,nominalGaji:g.nominalGaji})),
+    pajak:p.pajak||{aktif:false,pph:2,ppn:11}};
+  D.templates=D.templates||[];D.templates.push(tmpl);saveSync(D);
+  alert(`✅ Template "${nama}" berhasil disimpan!`);
+}
+function openKelolaTemplate(){
+  D.templates=D.templates||[];
+  openModal('📋 Template Proyek',`
+    <p class="muted mb12">Template menyimpan struktur termin, anggota tim, dan pengaturan pajak — bisa diterapkan ke proyek baru.</p>
+    <div id="templateList"></div>
+    <div class="mftr"><button class="btn btn-p" onclick="closeModal()">Tutup</button></div>`);
+  renderTemplateList();
+}
+function renderTemplateList(){
+  const el=document.getElementById('templateList');if(!el)return;
+  if(!D.templates||!D.templates.length){el.innerHTML=`<div class="empty">Belum ada template. Buka proyek → klik "💾 Simpan Template".</div>`;return}
+  el.innerHTML=D.templates.map(t=>`
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px">
+      <div class="fxb mb8">
+        <div><div style="font-weight:700;font-size:14px">${t.nama}</div><div class="faint">${t.deskripsi} · ${(t.termin||[]).length} termin · ${(t.anggota||[]).length} anggota</div></div>
+        <div class="fx"><button class="btn btn-xs btn-del" onclick="hapusTemplate(${t.id})">Hapus</button></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${(t.termin||[]).map(tm=>`<span style="font-size:11px;background:var(--accent-lt);color:var(--accent-dk);padding:2px 8px;border-radius:10px">${tm.nama} ${tm.persen}%</span>`).join('')}
+        ${(t.anggota||[]).map(a=>`<span style="font-size:11px;background:var(--green-lt);color:var(--green-dk);padding:2px 8px;border-radius:10px">👤 ${a.anggota}</span>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function hapusTemplate(tid){
+  if(!confirm('Hapus template ini?'))return;
+  D.templates=(D.templates||[]).filter(t=>t.id!==tid);saveSync(D);renderTemplateList();
+}
+function terapkanTemplate(tmplId){
+  const tmpl=(D.templates||[]).find(t=>t.id===tmplId);if(!tmpl)return;
+  if(!confirm(`Terapkan template "${tmpl.nama}"? Termin & anggota yang ada akan digabung.`))return;
+  const p=getP(curId);
+  (tmpl.termin||[]).forEach(t=>{
+    p.termin.push({id:Date.now()+Math.random(),nama:t.nama,persen:t.persen,nilai:Math.round(p.nilaiKontrak*t.persen/100),status:'Belum Ditagih',tanggalTagih:'',tanggalBayar:'',catatan:t.catatan||''});
+  });
+  (tmpl.anggota||[]).forEach(a=>{
+    if(!p.gaji.find(g=>g.anggota===a.anggota)){p.gaji.push({anggota:a.anggota,nominalGaji:a.nominalGaji,riwayat:[]});if(!D.anggota.includes(a.anggota))D.anggota.push(a.anggota)}
+    if(!p.bon.find(b=>b.anggota===a.anggota))p.bon.push({anggota:a.anggota,riwayatPinjam:[],riwayatKembali:[]});
+  });
+  if(tmpl.pajak)p.pajak=tmpl.pajak;
+  saveSync(D);closeModal();openDetail(curId);
+}
+
+// ══ FITUR 7: PAJAK OTOMATIS ══
+function openPengaturanPajak(){
+  const p=getP(curId);const pajak=p.pajak||{aktif:false,pph:2,ppn:11};
+  openModal('🧾 Pengaturan Pajak',`
+    <div style="background:var(--amber-lt);border:1px solid var(--amber-md);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--amber-dk)">
+      ⚠ Pengaturan pajak ini hanya untuk referensi perhitungan. Konsultasikan dengan konsultan pajak untuk kebutuhan resmi.
+    </div>
+    <div class="fg"><label>Aktifkan Perhitungan Pajak</label>
+      <select id="pjAktif"><option value="0" ${!pajak.aktif?'selected':''}>Tidak Aktif</option><option value="1" ${pajak.aktif?'selected':''}>Aktif</option></select></div>
+    <div class="fg2">
+      <div class="fg"><label>PPh Final (%)<br><span class="faint">Pajak penghasilan dari kontrak</span></label><input id="pjPph" type="number" value="${pajak.pph}" min="0" max="100" step="0.5"></div>
+      <div class="fg"><label>PPN (%)<br><span class="faint">Pajak Pertambahan Nilai</span></label><input id="pjPpn" type="number" value="${pajak.ppn}" min="0" max="100" step="0.5"></div>
+    </div>
+    <div id="pajakPreview" style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:4px"></div>
+    <div class="mftr"><button class="btn" onclick="closeModal()">Batal</button><button class="btn btn-p" onclick="simpanPajak()">Simpan</button></div>`);
+  updatePajakPreview();
+  document.getElementById('pjPph').oninput=updatePajakPreview;
+  document.getElementById('pjPpn').oninput=updatePajakPreview;
+  document.getElementById('pjAktif').onchange=updatePajakPreview;
+}
+function updatePajakPreview(){
+  const p=getP(curId);const c=calcP(p);
+  const aktif=document.getElementById('pjAktif').value==='1';
+  const pph=parseFloat(document.getElementById('pjPph').value)||0;
+  const ppn=parseFloat(document.getElementById('pjPpn').value)||0;
+  const nilaiPPh=Math.round(c.masuk*pph/100);
+  const nilaiPPN=Math.round(p.nilaiKontrak*ppn/100);
+  const profitAfterTax=c.profit-nilaiPPh;
+  const el=document.getElementById('pajakPreview');if(!el)return;
+  el.innerHTML=!aktif?`<p class="faint">Aktifkan pajak untuk melihat estimasi perhitungan.</p>`:`
+    <div class="lbl mb8">Estimasi Perhitungan</div>
+    <div style="display:grid;gap:6px;font-size:13px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Profit Kotor</span><span style="font-weight:700">${fmt(c.profit)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>PPh ${pph}% dari pemasukan (${fmt(c.masuk)})</span><span style="color:var(--red-dk);font-weight:700">-${fmt(nilaiPPh)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span class="faint">PPN ${ppn}% dari kontrak (info)</span><span class="faint">${fmt(nilaiPPN)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-weight:700">Profit After Tax (estimasi)</span><span style="font-weight:800;color:${profitAfterTax>=0?'var(--green-dk)':'var(--red-dk)'}">${fmt(profitAfterTax)}</span></div>
+    </div>`;
+}
+function simpanPajak(){
+  const p=getP(curId);
+  p.pajak={aktif:document.getElementById('pjAktif').value==='1',pph:parseFloat(document.getElementById('pjPph').value)||0,ppn:parseFloat(document.getElementById('pjPpn').value)||0};
+  saveSync(D);closeModal();openDetail(curId);
+}
+
+</script>
+<button class="fab" onclick="openAddProyek()" title="Tambah Proyek">＋</button>
+</body>
+</html>
