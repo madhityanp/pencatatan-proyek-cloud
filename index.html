@@ -239,6 +239,43 @@ textarea{resize:vertical;min-height:80px}
   #tabActions{display:flex;flex-wrap:wrap;gap:6px}
 }
 
+
+
+
+/* ══ INVOICE ══ */
+.inv-wrap{background:#fff;border:2px solid #e4e4da;border-radius:14px;padding:32px;font-size:13px;max-width:620px;margin:0 auto}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid #1a1a18}
+.inv-brand{font-size:22px;font-weight:900;color:#2563eb;letter-spacing:-.5px}
+.inv-title{font-size:28px;font-weight:900;color:#1a1a18;letter-spacing:-.8px;margin-bottom:4px}
+.inv-number{font-size:13px;color:#64645c}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.inv-party-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#a0a098;margin-bottom:6px}
+.inv-party-name{font-size:15px;font-weight:800;margin-bottom:2px}
+.inv-items table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.inv-items th{background:#f1f5f9;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#64748b;border-bottom:1px solid #e2e8f0}
+.inv-items td{padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.inv-total-box{background:#f8faff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin-bottom:20px}
+.inv-total-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
+.inv-total-row.final{font-size:16px;font-weight:900;border-top:2px solid #1d4ed8;margin-top:8px;padding-top:10px;color:#1d4ed8}
+.inv-footer{margin-top:24px;padding-top:16px;border-top:1px solid #e4e4da;font-size:11px;color:#a0a098;text-align:center}
+.inv-status{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.inv-status.lunas{background:#dcfce7;color:#15803d}
+.inv-status.belum{background:#fef3c7;color:#b45309}
+
+/* ══ WHATSAPP ══ */
+.wa-preview{background:#e7ffd9;border:1px solid #25d366;border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.7;white-space:pre-wrap;font-family:inherit;color:#111;max-height:320px;overflow-y:auto}
+.wa-btn{background:#25d366;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;transition:background .15s}
+.wa-btn:hover{background:#128c7e}
+
+/* ══ ACTIVITY LOG ══ */
+.log-item{display:flex;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.log-item:last-child{border-bottom:none}
+.log-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.log-body{flex:1}
+.log-action{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.log-meta{font-size:11px;color:var(--faint)}
+.log-detail{font-size:12px;color:var(--muted);margin-top:3px;background:var(--surface-2);border-radius:5px;padding:4px 8px;display:inline-block}
+
 /* ══ SECURITY ══ */
 .session-bar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--faint);padding:4px 10px;background:var(--green-lt);border:1px solid var(--green-md);border-radius:20px}
 .session-bar .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
@@ -263,6 +300,7 @@ textarea{resize:vertical;min-height:80px}
     <div class="fx">
       <button class="btn" onclick="openKelolaAnggota()">👥 Kelola Tim</button>
       <button class="btn" onclick="openKelolaTemplate()">📋 Template</button>
+      <button class="btn" onclick="openActivityLog()">📜 Aktivitas</button>
       <button class="btn btn-p" onclick="openAddProyek()">＋ Tambah Proyek</button>
     </div>
   </div>
@@ -390,7 +428,7 @@ textarea{resize:vertical;min-height:80px}
 </div>
 
 <script>
-const KEY='proj_v8';
+const KEY='proj_v9'; // v9: activity log, WA share, GDrive backup, invoice
 const AUTH_KEY='proj_auth_v8';
 const SESSION_KEY='proj_sess_v8';
 
@@ -622,6 +660,7 @@ function seed(){
 
 function ensureAppFields(){
   D.templates=D.templates||[];
+  D.activityLog=D.activityLog||[];
   if(!D.namaInstansi)D.namaInstansi='Pencatatan Proyek';
   D.proyek.forEach(p=>{
     if(!p.pajak)p.pajak={aktif:false,pph:2,ppn:11};
@@ -730,6 +769,8 @@ function openDetail(id){
         <button class="btn btn-sm" onclick="openEditProyek('${p.id}')">✏ Edit</button>
         <button class="btn btn-sm" onclick="openPengaturanPajak()">🧾 Pajak</button>
         <button class="btn btn-sm" onclick="simpanSebagaiTemplate()">💾 Template</button>
+        <button class="btn btn-sm" style="background:#25d366;color:#fff;border-color:#25d366" onclick="openShareWA()">📤 WA</button>
+        <button class="btn btn-sm" onclick="openInvoiceBuilder()">🧾 Invoice</button>
         <button class="btn btn-t btn-sm" onclick="eksporPDFProyek()">📄 Ekspor PDF</button>
       </div>
     </div>`;
@@ -761,7 +802,7 @@ function switchTab(tab,btn){
   else if(tab==='gaji'){act.innerHTML=`<button class="btn btn-sm" onclick="openTambahAnggotaProyek()">＋ Anggota</button><button class="btn btn-sm" onclick="openSetGaji()">⚙ Set Gaji</button><button class="btn btn-p btn-sm" onclick="openBayarGaji()">💰 Bayar Gaji</button>`;renderGaji()}
   else if(tab==='bon'){act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openAddBon()">＋ Catat Bon</button><button class="btn btn-g btn-sm" onclick="openKembaliBon()">↩ Kembali</button>`;renderBon()}
   else if(tab==='grafik'){act.innerHTML='';renderGrafik()}
-  else if(tab==='catatan'){act.innerHTML=`<button class="btn btn-p btn-sm" onclick="openEditCatatan()">✏ Edit Catatan</button>`;renderCatatan()}
+  else if(tab==='catatan'){act.innerHTML=`<button class="btn btn-sm" onclick="openSyncGDrive()">☁ GDrive Backup</button><button class="btn btn-p btn-sm" onclick="openEditCatatan()">✏ Edit Catatan</button>`;renderCatatan()}
   else{act.innerHTML='';renderRingkasan()}
 }
 
@@ -788,7 +829,9 @@ function openAddTransaksi(){
 function simpanTrx(){
   const ket=document.getElementById('tKet').value.trim();const masuk=parseFloat(document.getElementById('tMasuk').value)||0;const keluar=parseFloat(document.getElementById('tKeluar').value)||0;
   if(!ket||(!masuk&&!keluar)){alert('Keterangan dan nominal wajib diisi.');return}
-  getP(curId).transaksi.push({id:Date.now(),tanggal:document.getElementById('tTgl').value,kategori:document.getElementById('tKat').value,keterangan:ket,pemasukan:masuk,pengeluaran:keluar});
+  const newTrx={id:Date.now(),tanggal:document.getElementById('tTgl').value,kategori:document.getElementById('tKat').value,keterangan:ket,pemasukan:masuk,pengeluaran:keluar};
+  getP(curId).transaksi.push(newTrx);
+  logActivity('transaksi',`Transaksi baru: ${ket} ${masuk>0?'+'+fmt(masuk):'-'+fmt(keluar)}`,curId);
   saveSync(D);closeModal();openDetail(curId);
 }
 function hapusTrx(tid){if(!confirm('Hapus transaksi?'))return;getP(curId).transaksi=getP(curId).transaksi.filter(t=>t.id!==tid);saveSync(D);openDetail(curId)}
@@ -994,6 +1037,7 @@ function simpanBayarGaji(){
   if(!g){g={anggota,nominalGaji:0,riwayat:[]};p.gaji.push(g)}
   g.riwayat.push({tanggal:tgl,jumlah:jml,catatan:cat});
   p.transaksi.push({id:Date.now(),tanggal:tgl,kategori:'Gaji',keterangan:`Gaji ${anggota}${cat?' - '+cat:''}`,pemasukan:0,pengeluaran:jml});
+  logActivity('gaji',`Gaji ${anggota} dibayar: ${fmt(jml)}${cat?' ('+cat+')':''}`,curId);
   saveSync(D);closeModal();renderGaji();
 }
 function openRiwayatGaji(nama){
@@ -1346,6 +1390,378 @@ function openModal(title,html){document.getElementById('mboxEl').classList.remov
 function closeModal(){document.getElementById('modal').classList.remove('open')}
 
 initAuth();
+
+// ══════════════════════════════════════
+// FITUR 3: RIWAYAT AKTIVITAS
+// ══════════════════════════════════════
+function logActivity(type, description, proyekId=null){
+  if(!D.activityLog)D.activityLog=[];
+  const icons={proyek:'📁',transaksi:'💳',termin:'🎯',gaji:'💰',bon:'🪙',catatan:'📌',pajak:'🧾',lain:'📝'};
+  D.activityLog.unshift({
+    id:Date.now(),
+    type,
+    icon:icons[type]||'📝',
+    description,
+    proyekId,
+    proyekNama:proyekId?getP(proyekId)?.nama:'',
+    timestamp:new Date().toISOString()
+  });
+  // Keep max 200 logs
+  if(D.activityLog.length>200)D.activityLog=D.activityLog.slice(0,200);
+}
+
+function formatTimeAgo(isoStr){
+  const diff=Date.now()-new Date(isoStr).getTime();
+  const m=Math.floor(diff/60000);
+  const h=Math.floor(diff/3600000);
+  const d=Math.floor(diff/86400000);
+  if(m<1)return'Baru saja';
+  if(m<60)return`${m} menit lalu`;
+  if(h<24)return`${h} jam lalu`;
+  if(d<7)return`${d} hari lalu`;
+  return new Date(isoStr).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function openActivityLog(){
+  if(!D.activityLog)D.activityLog=[];
+  const logs=D.activityLog;
+  document.getElementById('mboxEl').classList.add('mbox-wide');
+  openModal('📜 Riwayat Aktivitas',`
+    <div class="fxb mb12">
+      <span class="muted">${logs.length} aktivitas tercatat</span>
+      <div class="fx">
+        <select id="logFilter" onchange="filterActivityLog()" style="font-size:12px;padding:5px 8px;border:1px solid var(--border-md);border-radius:6px">
+          <option value="">Semua tipe</option>
+          <option value="proyek">📁 Proyek</option>
+          <option value="transaksi">💳 Transaksi</option>
+          <option value="termin">🎯 Termin</option>
+          <option value="gaji">💰 Gaji</option>
+          <option value="bon">🪙 Kas Bon</option>
+        </select>
+        <button class="btn btn-xs btn-del" onclick="clearActivityLog()">🗑 Hapus Semua</button>
+      </div>
+    </div>
+    <div id="activityLogList" style="max-height:420px;overflow-y:auto"></div>
+    <div class="mftr"><button class="btn btn-p" onclick="closeModal()">Tutup</button></div>`);
+  renderActivityLogList('');
+}
+
+function renderActivityLogList(filter){
+  const logs=(D.activityLog||[]).filter(l=>!filter||l.type===filter);
+  const el=document.getElementById('activityLogList');if(!el)return;
+  if(!logs.length){el.innerHTML=`<div class="empty">Belum ada aktivitas${filter?' untuk kategori ini':''}.</div>`;return;}
+  el.innerHTML=logs.map(l=>`
+    <div class="log-item">
+      <div class="log-icon" style="background:${l.type==='transaksi'?'var(--accent-lt)':l.type==='gaji'?'var(--amber-lt)':l.type==='termin'?'var(--green-lt)':'var(--surface-2)'}">${l.icon}</div>
+      <div class="log-body">
+        <div class="log-action">${l.description}</div>
+        <div class="log-meta">${formatTimeAgo(l.timestamp)} · ${new Date(l.timestamp).toLocaleString('id-ID')}${l.proyekNama?` · <span style="color:var(--accent)">${l.proyekNama}</span>`:''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function filterActivityLog(){
+  const filter=document.getElementById('logFilter')?.value||'';
+  renderActivityLogList(filter);
+}
+
+function clearActivityLog(){
+  if(!confirm('Hapus semua riwayat aktivitas?'))return;
+  D.activityLog=[];saveSync(D);
+  renderActivityLogList('');
+}
+
+// ══════════════════════════════════════
+// FITUR 5: SHARE KE WHATSAPP
+// ══════════════════════════════════════
+function openShareWA(){
+  const p=getP(curId);const c=calcP(p);
+  const today_str=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  const terminInfo=(p.termin||[]).length?`\n📋 *Status Termin:*\n`+(p.termin||[]).map(t=>`   ${t.status==='Sudah Dibayar'?'✅':t.status==='Sudah Ditagih'?'⏳':'⬜'} ${t.nama} (${t.persen}%) — ${t.status}`).join('\n'):'';
+  const gajiInfo=p.gaji.length?`\n💰 *Rekap Gaji Tim:*\n`+p.gaji.map(g=>{const cg=calcGaji(g);return`   👤 ${g.anggota}: Terbayar ${fmt(cg.bayar)}${g.nominalGaji>0?' / '+fmt(g.nominalGaji):''}`}).join('\n'):'';
+  const template1=`📋 *LAPORAN PROYEK*\n${'─'.repeat(30)}\n🏗 *${p.nama}*\n🏢 Klien: ${p.klien}${p.nomorSPK?'\n📄 SPK: '+p.nomorSPK:''}\n📅 Mulai: ${p.tanggalMulai}\n\n💼 *Ringkasan Keuangan:*\n   Nilai Kontrak : ${fmt(p.nilaiKontrak)}\n   Diterima      : ${fmt(c.masuk)} (${pct(c.masuk,p.nilaiKontrak)}%)\n   Pengeluaran   : ${fmt(c.keluar)}\n   Profit        : ${fmt(c.profit)}\n   Sisa Tagihan  : ${fmt(p.nilaiKontrak-c.masuk)}${terminInfo}${gajiInfo}\n\n_Laporan per ${today_str}_\n_${D.namaInstansi||'Pencatatan Proyek'}_`;
+  const template2=`Assalamu'alaikum,\n\nBerikut update progres proyek *${p.nama}*:\n\n✅ Nilai Kontrak: ${fmt(p.nilaiKontrak)}\n✅ Sudah diterima: ${fmt(c.masuk)}\n⏳ Sisa tagihan: ${fmt(p.nilaiKontrak-c.masuk)}\n\nMohon konfirmasinya. Terima kasih 🙏\n\n_${D.namaInstansi||'Pencatatan Proyek'}_`;
+  const template3=`*TAGIHAN TERMIN*\n${'─'.repeat(25)}\nProyek  : *${p.nama}*\nKlien   : ${p.klien}\n\n`+(p.termin||[]).filter(t=>t.status==='Sudah Ditagih').map(t=>`Termin  : ${t.nama}\nNilai   : *${fmt(t.nilai)}*\nDitagih : ${t.tanggalTagih||'-'}\n`).join('\n')+`\nMohon untuk segera melakukan pembayaran.\nTerima kasih 🙏\n_${D.namaInstansi||'Pencatatan Proyek'}_`;
+
+  openModal('📤 Share ke WhatsApp',`
+    <div class="fg"><label>Pilih Template Pesan</label>
+      <select id="waTemplate" onchange="previewWA()" style="margin-bottom:10px">
+        <option value="0">📊 Laporan Lengkap</option>
+        <option value="1">💬 Update Progress (Singkat)</option>
+        <option value="2">🔔 Tagihan Termin</option>
+      </select>
+    </div>
+    <div class="fg"><label>Preview Pesan</label>
+      <div class="wa-preview" id="waPreview"></div>
+    </div>
+    <div class="fg"><label>Nomor WhatsApp Klien (opsional)</label>
+      <input id="waNumber" placeholder="628123456789 (tanpa + atau spasi)" value="${(p.kontakPIC||'').replace(/[^0-9]/g,'')}">
+      <div class="faint" style="margin-top:4px">Kosongkan untuk buka WhatsApp Web saja</div>
+    </div>
+    <div class="mftr">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="wa-btn" onclick="kirimWA()">📤 Buka WhatsApp</button>
+    </div>`);
+  window._waTemplates=[template1,template2,template3];
+  previewWA();
+}
+
+function previewWA(){
+  const idx=document.getElementById('waTemplate')?.value||0;
+  const el=document.getElementById('waPreview');if(!el)return;
+  const raw=window._waTemplates[idx]||'';
+  el.textContent=raw.replace(/\\n/g,'\n').replace(/\n/g,'\n');
+}
+
+function kirimWA(){
+  const idx=document.getElementById('waTemplate')?.value||0;
+  const raw=window._waTemplates[idx]||'';
+  const msg=encodeURIComponent(raw.replace(/\\n/g,'\n').replace(/\n/g,'\n').replace(/\*/g,'*'));
+  const num=(document.getElementById('waNumber')?.value||'').replace(/[^0-9]/g,'');
+  const url=num?`https://wa.me/${num}?text=${msg}`:`https://web.whatsapp.com/send?text=${msg}`;
+  window.open(url,'_blank');
+  logActivity('lain',`Laporan proyek dibagikan via WhatsApp`,curId);
+}
+
+// ══════════════════════════════════════
+// FITUR 8: BACKUP GOOGLE DRIVE
+// ══════════════════════════════════════
+function openSyncGDrive(){
+  openModal('☁ Backup ke Google Drive',`
+    <div style="text-align:center;padding:10px 0 20px">
+      <div style="font-size:48px;margin-bottom:12px">☁</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px">Backup Data ke Google Drive</div>
+      <div class="muted mb16">Data akan diunduh sebagai file JSON terenkripsi, lalu Pak Adhitya upload manual ke Google Drive.</div>
+    </div>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px">Langkah Backup</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</span><span>Klik <strong>Download Backup</strong> — file JSON akan terunduh</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</span><span>Buka <strong>drive.google.com</strong> → upload file backup tersebut</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</span><span>Untuk restore, gunakan tombol <strong>Import Backup</strong> di bawah</span></div>
+      </div>
+    </div>
+    <div id="driveStatus" style="display:none"></div>
+    <div class="sep"></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px">Import Backup</div>
+    <div class="fg">
+      <label>Pilih File Backup (.json)</label>
+      <input type="file" id="importFile" accept=".json" onchange="previewImport(this)">
+    </div>
+    <div id="importPreview" style="display:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:12px;font-size:13px"></div>
+    <div class="mftr">
+      <button class="btn" onclick="closeModal()">Tutup</button>
+      <button class="btn" id="importBtn" style="display:none" onclick="doImportBackup()">📥 Import & Ganti Data</button>
+      <button class="btn btn-p" onclick="doDownloadBackup()">📥 Download Backup</button>
+      <button class="btn btn-sm" onclick="window.open('https://drive.google.com','_blank')">☁ Buka Google Drive</button>
+    </div>`);
+}
+
+async function doDownloadBackup(){
+  const tgl=new Date().toISOString().slice(0,10);
+  const backupData={
+    version:'v8',
+    exportedAt:new Date().toISOString(),
+    exportedBy:D.namaInstansi||'Pencatatan Proyek',
+    data:D
+  };
+  const json=JSON.stringify(backupData,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`backup-proyek-${tgl}.json`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  logActivity('lain','Data dibackup ke file JSON');
+  const el=document.getElementById('driveStatus');
+  if(el){el.style.display='block';el.innerHTML=`<div class="tip" style="background:var(--green-lt);border:1px solid var(--green-md);color:var(--green-dk);border-radius:8px;padding:10px 12px;font-size:12px">✅ File backup-proyek-${tgl}.json berhasil diunduh. Sekarang upload ke Google Drive Anda.</div>`}
+}
+
+function previewImport(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const backup=JSON.parse(e.target.result);
+      const el=document.getElementById('importPreview');
+      const btn=document.getElementById('importBtn');
+      if(backup.data&&backup.data.proyek){
+        el.style.display='block';
+        el.innerHTML=`✅ File valid: <strong>${backup.exportedBy||'—'}</strong> · ${backup.data.proyek.length} proyek · ${backup.data.anggota?.length||0} anggota · Diekspor: ${backup.exportedAt?new Date(backup.exportedAt).toLocaleString('id-ID'):'—'}`;
+        el.style.color='var(--green-dk)';
+        window._importData=backup.data;
+        if(btn)btn.style.display='';
+      }else{
+        el.style.display='block';el.innerHTML='❌ File tidak valid atau bukan format backup aplikasi ini.';el.style.color='var(--red-dk)';
+        if(btn)btn.style.display='none';
+      }
+    }catch(err){alert('File tidak dapat dibaca.');}
+  };
+  reader.readAsText(file);
+}
+
+async function doImportBackup(){
+  if(!window._importData){alert('Pilih file backup terlebih dahulu.');return;}
+  if(!confirm('⚠ Import akan MENGGANTI semua data saat ini. Lanjutkan?'))return;
+  D=window._importData;
+  await save(D);
+  closeModal();
+  logActivity('lain','Data direstore dari backup JSON');
+  renderDash();
+  alert('✅ Data berhasil diimport!');
+}
+
+// ══════════════════════════════════════
+// FITUR 9: INVOICE GENERATOR
+// ══════════════════════════════════════
+let invoiceCounter=1;
+
+function openInvoiceBuilder(){
+  const p=getP(curId);ensureFields(p);
+  const c=calcP(p);
+  const pajak=p.pajak||{aktif:false,pph:2,ppn:11};
+  const nomorInv=`INV/${new Date().getFullYear()}/${String(invoiceCounter).padStart(3,'0')}`;
+
+  openModal('🧾 Buat Invoice',`
+    <div class="fg2">
+      <div class="fg"><label>Nomor Invoice</label><input id="invNomor" value="${nomorInv}"></div>
+      <div class="fg"><label>Tanggal Invoice</label><input id="invTgl" type="date" value="${today()}"></div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label>Jatuh Tempo</label><input id="invJatuhTempo" type="date" value="${new Date(Date.now()+14*86400000).toISOString().slice(0,10)}"></div>
+      <div class="fg"><label>Termin (opsional)</label>
+        <select id="invTermin">
+          <option value="">-- Pilih termin atau custom --</option>
+          ${(p.termin||[]).map(t=>`<option value="${t.id}">${t.nama} — ${fmt(t.nilai)}</option>`).join('')}
+          <option value="custom">Custom / Manual</option>
+        </select>
+      </div>
+    </div>
+    <div id="invItemsWrap">
+      <div class="lbl mb8">Item Invoice</div>
+      <div id="invItems">
+        <div class="fg2" style="margin-bottom:8px">
+          <div class="fg"><label>Deskripsi</label><input class="inv-desc" value="Jasa Pengembangan ${p.nama}" placeholder="Deskripsi pekerjaan..."></div>
+          <div class="fg"><label>Jumlah (Rp)</label><input class="inv-amount" type="number" value="${c.masuk}" min="0" oninput="calcInvoiceTotal()"></div>
+        </div>
+      </div>
+      <button class="btn btn-sm mb12" onclick="addInvItem()">+ Tambah Item</button>
+    </div>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
+      <div class="fg2">
+        <div><div class="lbl mb4">Subtotal</div><div id="invSubtotal" style="font-size:15px;font-weight:700">${fmt(c.masuk)}</div></div>
+        <div><div class="lbl mb4">PPN ${pajak.ppn}%</div><div id="invPPN" style="font-size:15px;font-weight:700;color:var(--red-dk)">${pajak.aktif?fmt(Math.round(c.masuk*pajak.ppn/100)):'Rp0'}</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);font-size:17px;font-weight:800">
+        <span>TOTAL</span><span id="invTotal" style="color:var(--accent)">${fmt(c.masuk)}</span>
+      </div>
+    </div>
+    <div class="fg"><label>Catatan / Syarat Pembayaran</label>
+      <textarea id="invCatatan" style="height:60px">Pembayaran dapat ditransfer ke rekening:${p.nomorRekening?' '+p.namaBank+' '+p.nomorRekening:''}\nMohon konfirmasi setelah transfer. Terima kasih.</textarea>
+    </div>
+    <div class="mftr">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="btn btn-p" onclick="generateInvoice()">🧾 Generate Invoice</button>
+    </div>`);
+  document.getElementById('invTermin').onchange=function(){
+    const val=this.value;
+    if(val&&val!=='custom'){
+      const t=(p.termin||[]).find(x=>x.id==val);
+      if(t){document.querySelector('.inv-desc').value=`${t.nama} — ${p.nama}`;document.querySelector('.inv-amount').value=t.nilai;calcInvoiceTotal();}
+    }
+  };
+}
+
+function addInvItem(){
+  const wrap=document.getElementById('invItems');
+  const div=document.createElement('div');div.className='fg2';div.style.marginBottom='8px';
+  div.innerHTML=`<div class="fg"><input class="inv-desc" placeholder="Deskripsi item..."></div><div class="fg" style="display:flex;gap:6px"><input class="inv-amount" type="number" placeholder="0" min="0" oninput="calcInvoiceTotal()" style="flex:1"><button onclick="this.parentElement.parentElement.parentElement.remove();calcInvoiceTotal()" style="padding:8px;border:1px solid var(--red-md);border-radius:6px;background:var(--red-lt);color:var(--red-dk);cursor:pointer">✕</button></div>`;
+  wrap.appendChild(div);
+}
+
+function calcInvoiceTotal(){
+  const amounts=[...document.querySelectorAll('.inv-amount')].map(i=>parseFloat(i.value)||0);
+  const sub=amounts.reduce((s,v)=>s+v,0);
+  const p=getP(curId);const pajak=p.pajak||{aktif:false,ppn:11};
+  const ppn=pajak.aktif?Math.round(sub*pajak.ppn/100):0;
+  const total=sub+ppn;
+  const el1=document.getElementById('invSubtotal');const el2=document.getElementById('invPPN');const el3=document.getElementById('invTotal');
+  if(el1)el1.textContent=fmt(sub);if(el2)el2.textContent=fmt(ppn);if(el3)el3.textContent=fmt(total);
+}
+
+function generateInvoice(){
+  const p=getP(curId);ensureFields(p);
+  const pajak=p.pajak||{aktif:false,ppn:11};
+  const nomorInv=document.getElementById('invNomor').value;
+  const tglInv=document.getElementById('invTgl').value;
+  const jatuhTempo=document.getElementById('invJatuhTempo').value;
+  const catatan=document.getElementById('invCatatan').value;
+  const descs=[...document.querySelectorAll('.inv-desc')].map(i=>i.value);
+  const amounts=[...document.querySelectorAll('.inv-amount')].map(i=>parseFloat(i.value)||0);
+  const sub=amounts.reduce((s,v)=>s+v,0);
+  const ppn=pajak.aktif?Math.round(sub*pajak.ppn/100):0;
+  const total=sub+ppn;
+  const tglFormatted=new Date(tglInv).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  const jtFormatted=new Date(jatuhTempo).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+
+  const itemRows=descs.map((d,i)=>`<tr><td>${i+1}</td><td>${d||'—'}</td><td style="text-align:right;font-weight:600">${fmt(amounts[i])}</td></tr>`).join('');
+
+  const css=`<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:32px;color:#1a1a18;font-size:13px}
+  .inv-wrap{max-width:680px;margin:0 auto;background:#fff;border:1px solid #e4e4da;border-radius:14px;padding:36px;box-shadow:0 2px 16px rgba(0,0,0,.08)}
+  .inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #2563eb}
+  .brand{font-size:13px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+  .brand-name{font-size:18px;font-weight:900;color:#1a1a18}
+  .inv-title{text-align:right}.inv-title h1{font-size:32px;font-weight:900;color:#1a1a18;letter-spacing:-1px}
+  .inv-meta{font-size:12px;color:#64645c;margin-top:4px}
+  .parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
+  .party-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#a0a098;margin-bottom:6px}
+  .party-name{font-size:15px;font-weight:800;margin-bottom:2px}
+  .party-detail{font-size:12px;color:#64645c}
+  table{width:100%;border-collapse:collapse;margin-bottom:20px}
+  th{background:#f1f5f9;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#64748b;border-bottom:1px solid #e2e8f0}
+  td{padding:10px 12px;border-bottom:1px solid #f8fafc;font-size:13px}
+  .total-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin-bottom:20px}
+  .total-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;color:#1e40af}
+  .total-final{font-size:18px;font-weight:900;color:#1d4ed8;border-top:2px solid #1d4ed8;margin-top:10px;padding-top:10px}
+  .catatan{background:#fffbeb;border:1px solid #fed7aa;border-radius:8px;padding:14px;font-size:12px;color:#92400e;line-height:1.6;margin-bottom:20px;white-space:pre-wrap}
+  .ttd{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:32px;padding-top:20px;border-top:1px solid #e4e4da}
+  .ttd-item{text-align:center;font-size:12px;color:#64645c}
+  .ttd-line{margin-top:48px;border-top:1px solid #1a1a18;padding-top:6px;font-weight:700;font-size:13px;color:#1a1a18}
+  .footer{text-align:center;font-size:10px;color:#a0a098;margin-top:24px;padding-top:12px;border-top:1px solid #e4e4da}
+  @media print{body{padding:0}.inv-wrap{box-shadow:none;border:none;border-radius:0}}
+  </style>`;
+
+  const invHtml=`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Invoice ${nomorInv}</title>${css}</head><body>
+  <div class="inv-wrap">
+    <div class="inv-header">
+      <div><div class="brand">Invoice</div><div class="brand-name">${D.namaInstansi||'Pencatatan Proyek'}</div></div>
+      <div class="inv-title"><h1>INVOICE</h1><div class="inv-meta">No: <strong>${nomorInv}</strong></div><div class="inv-meta">Tanggal: ${tglFormatted}</div><div class="inv-meta">Jatuh Tempo: <strong style="color:#b91c1c">${jtFormatted}</strong></div></div>
+    </div>
+    <div class="parties">
+      <div><div class="party-label">Dari</div><div class="party-name">${D.namaInstansi||'Pencatatan Proyek'}</div><div class="party-detail">M. Adhitya Nugraha Pratama</div></div>
+      <div><div class="party-label">Kepada</div><div class="party-name">${p.klien}</div><div class="party-detail">${p.kontakPIC||''}</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:10px">Proyek: ${p.nama}${p.nomorSPK?' · SPK: '+p.nomorSPK:''}</div>
+    <table><thead><tr><th>#</th><th>Deskripsi</th><th style="text-align:right">Jumlah</th></tr></thead>
+    <tbody>${itemRows}</tbody></table>
+    <div class="total-box">
+      <div class="total-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
+      ${pajak.aktif?`<div class="total-row"><span>PPN ${pajak.ppn}%</span><span>${fmt(ppn)}</span></div>`:''}
+      <div class="total-row total-final"><span>TOTAL TAGIHAN</span><span>${fmt(total)}</span></div>
+    </div>
+    ${catatan?`<div class="catatan">${catatan}</div>`:''}
+    <div class="ttd">
+      <div class="ttd-item">Hormat kami,<div class="ttd-line">M. Adhitya Nugraha Pratama</div><div style="font-size:11px">Project Manager</div></div>
+      <div class="ttd-item">Diterima oleh,<div class="ttd-line">${p.klien}</div><div style="font-size:11px">Pemberi Kerja</div></div>
+    </div>
+    <div class="footer">Invoice ini digenerate otomatis · ${D.namaInstansi||'Pencatatan Proyek'} · ${tglFormatted}</div>
+  </div></body></html>`;
+
+  invoiceCounter++;
+  logActivity('lain',`Invoice ${nomorInv} dibuat untuk proyek ${p.nama}`,curId);
+  const w=window.open('','_blank');w.document.write(invHtml);w.document.close();
+  setTimeout(()=>w.print(),600);
+}
 
 // ══ EDIT NAMA INSTANSI ══
 function openEditInstansi(){
